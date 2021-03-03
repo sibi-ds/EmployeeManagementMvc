@@ -1,0 +1,10 @@
+.class
+*.class
+/Employee.java
+/EmployeeController.java
+/EmployeeService.java
+/EmployeeView.java
+com/ideas2it/employeemanagement/model/*.class
+com/ideas2it/employeemanagement/service/*.class
+com/ideas2it/employeemanagement/controller/*.class
+com/ideas2it/employeemanagement/view/*.class
