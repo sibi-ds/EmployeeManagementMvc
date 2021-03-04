@@ -76,5 +76,4 @@ public class Employee {
                + "\nSALARY        : " + employeeSalary
                + "\nMOBILE NUMBER : " + employeeMobileNumber + "\n" ;
     }
-
 }

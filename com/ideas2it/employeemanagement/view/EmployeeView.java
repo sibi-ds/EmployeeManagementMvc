@@ -19,10 +19,9 @@ import com.ideas2it.employeemanagement.controller.EmployeeController;
 public class EmployeeView {
 
     private EmployeeController employeeController = new EmployeeController();
+    private Scanner scanner = new Scanner(System.in);
 
     public void view() {
-        Scanner scanner = new Scanner(System.in);
-
         byte option = 0;    // to track user's choice
 
         System.out.println("select an option to perform a particular operation on an employee's details");
@@ -39,10 +38,10 @@ public class EmployeeView {
                     createEmployee();
                     break;
                 case 2:
-                    displayEmployees();
+                    getEmployees();
                     break;
                 case 3:
-                    displayEmployee();
+                    getEmployee();
                     break;
                 case 4:
                     updateEmployee();
@@ -58,12 +57,11 @@ public class EmployeeView {
         }
     }
 
-    /*
+    /**
      * reads the employee details from the user and
      * request the controller to store the details
      */
-    void createEmployee() {
-        Scanner scanner = new Scanner(System.in);
+    private void createEmployee() {
         System.out.println("Enter employee's details ");
         System.out.print("Name              : ");
         String name = scanner.nextLine();
@@ -74,43 +72,44 @@ public class EmployeeView {
         System.out.print("Mobile Number     : ");
         String mobileNumber = validateMobileNumber();
 
-        System.out.println(employeeController
-                .createEmployee(name, dob, salary ,mobileNumber));
+        if (employeeController.createEmployee(name, dob, salary ,mobileNumber)) {
+            System.out.println("Employee details stored successfully");
+        } else {
+            System.out.println("Creation failure");
+        }
     }
 
-    /*
-     * display details of all the employees
+    /**
+     * get details of all the employees and display them
      */
-    void displayEmployees() {
+    private void getEmployees() {
         System.out.println("\n-----Employee Database-----\n");
 
-        employeeController.displayEmployees().forEach((employeeDetails) -> {
+        employeeController.getEmployees().forEach((employeeDetails) -> {
             System.out.println(employeeDetails);
         });
     }
 
-    /*
+    /**
      * reads the employeeId from the user and request
-     * the controller to give the details of an employee
+     * the controller to get the details of an employee
      */
-    void displayEmployee() {
+    private void getEmployee() {
         System.out.println("Enter employee ID to be displayed : ");
-        Scanner scanner = new Scanner(System.in);
         int employeeId = scanner.nextInt();
 
         if (!employeeController.isEmployeePresent(employeeId)) {
             System.out.println("Employee details not present");
         } else {
-            System.out.println(employeeController.displayEmployee(employeeId));
+            System.out.println(employeeController.getEmployee(employeeId));
         }
     }
 
-    /*
+    /**
      * updates certain detail of an employee
      */
-    void updateEmployee() {
+    private void updateEmployee() {
         System.out.println("Enter employeeId to update the details");
-        Scanner scanner = new Scanner(System.in);
         int employeeId = scanner.nextInt();
 
         if (!employeeController.isEmployeePresent(employeeId)) {
@@ -127,29 +126,16 @@ public class EmployeeView {
 
                 switch (updationParameter) {
                     case 'N':
-                        System.out.println("Enter updated NAME");
-                        scanner.skip("[\r\n]{2}");
-                        String name = scanner.nextLine();
-                        employeeController.updateName(employeeId,name);
-                        System.out.println("Updation Successful");
+                        updateName(employeeId);
                         break;
                     case 'D':
-                        System.out.println("Enter updated DOB (DD/MM/YYYY)");
-                        Date dob = validateDate();
-                        employeeController.updateDob(employeeId, dob);
-                        System.out.println("Updation Successful");
+                        updateDob(employeeId);
                         break;
                     case 'S':
-                        System.out.println("Enter updated SALARY");
-                        float salary = scanner.nextFloat();
-                        employeeController.updateSalary(employeeId, salary);
-                        System.out.println("Updation Successful");
+                        updateSalary(employeeId);
                         break;
                     case 'M':
-                        System.out.println("Enter updated MOBILE NUMBER");
-                        String mobileNumber = scanner.next();
-                        employeeController.updateMobileNumber(employeeId, mobileNumber);
-                        System.out.println("Updation Successful");
+                        updateMobileNumber(employeeId);
                         break;
                     case 'C':
                         System.out.println("Updation cancelled");
@@ -163,27 +149,76 @@ public class EmployeeView {
         }
     }
 
-    /*
+    /**
+     * updates name of an employee
+     *
+     * @param employeeId    ID for which name should be updated
+     */
+    private void updateName(int employeeId) {
+        System.out.println("Enter updated NAME");
+        scanner.skip("[\r\n]{2}");
+        String name = scanner.nextLine();
+        employeeController.updateName(employeeId,name);
+        System.out.println("Updation Successful");
+    }
+
+    /**
+     * updates Date Of Birth of an employee
+     *
+     * @param employeeId    ID for which Date Of Birth should be updated
+     */
+    private void updateDob(int employeeId) {
+        System.out.println("Enter updated DOB (DD/MM/YYYY)");
+        Date dob = validateDate();
+        employeeController.updateDob(employeeId, dob);
+        System.out.println("Updation Successful");
+    }
+
+    /**
+     * updates salary of an employee
+     *
+     * @param employeeId    ID for which salary should be updated
+     */
+    private void updateSalary(int employeeId) {
+        System.out.println("Enter updated SALARY");
+        float salary = scanner.nextFloat();
+        employeeController.updateSalary(employeeId, salary);
+        System.out.println("Updation Successful");
+    }
+
+    /**
+     * updates mobile number of an employee
+     *
+     * @param employeeId    ID for which mobile number should be updated
+     */
+    private void updateMobileNumber(int employeeId) {
+        System.out.println("Enter updated MOBILE NUMBER");
+        String mobileNumber = scanner.next();
+        employeeController.updateMobileNumber(employeeId, mobileNumber);
+        System.out.println("Updation Successful");
+    }
+
+    /**
      * reads the employeeId from the user and request
      * the controller to remove the details of an employee
      */
     void deleteEmployee() {
         System.out.println("Enter employee's ID to delete the employee");
-        Scanner scanner = new Scanner(System.in);
         int employeeId = scanner.nextInt();
 
         if (!employeeController.isEmployeePresent(employeeId)) {
             System.out.println("Employee details not present");
+        } else if (employeeController.deleteEmployee(employeeId)) {
+            System.out.println("Deletion successful");
         } else {
-            System.out.println(employeeController.deleteEmployee(employeeId));
+            System.out.println("Deletion failure");
         }
     }
 
-    /*
+    /**
      * the mobile number is validated using regex
      */
     private String validateMobileNumber() {
-        Scanner scanner = new Scanner(System.in);
         String mobileNumber = scanner.next();
         if (!mobileNumber.matches("[1-9][0-9]{9}")) {
             System.out.println("Enter valid mobile number");
@@ -192,20 +227,16 @@ public class EmployeeView {
         return mobileNumber;
     }
 
-    /*
+    /**
      * the date is validated using parsing and exception handling
      */
     private Date validateDate() {
-        Scanner scanner = new Scanner(System.in);
-
         try {
             return new SimpleDateFormat("dd/MM/yyyy").parse(scanner.next());
         } catch (ParseException exception) {
             System.out.println("Enter valid date format");
             return validateDate();
         }
-        
     }
-
 }
 
