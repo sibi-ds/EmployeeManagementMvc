@@ -35,7 +35,7 @@ public class EmployeeView {
 
             switch (option) {
                 case 1:
-                    createEmployee();
+                    insertEmployee();
                     break;
                 case 2:
                     getEmployees();
@@ -61,7 +61,7 @@ public class EmployeeView {
      * reads the employee details from the user and
      * request the controller to store the details
      */
-    private void createEmployee() throws ClassNotFoundException, SQLException {
+    private void insertEmployee() throws ClassNotFoundException, SQLException {
         System.out.println("Enter employee's details ");
         System.out.print("Name              : ");
         String name = scanner.nextLine();
@@ -72,11 +72,111 @@ public class EmployeeView {
         System.out.print("Mobile Number     : ");
         String mobileNumber = validateMobileNumber();
 
-        if (employeeController.createEmployee(name,dob,salary,mobileNumber)) {
-            System.out.println("Employee details stored successfully");
+        if (employeeController.insertEmployee(name, dob, salary, mobileNumber)) {
+            System.out.println("Employee basic details stored successfully");
+            insertAddresses();
         } else {
             System.out.println("Insertion failure");
         }
+    }
+
+    /**
+     * used to insert addresses of all types
+     */
+    private void insertAddresses() throws ClassNotFoundException, SQLException {
+        System.out.println("\n-----Enter address details-----\n");
+        System.out.println("Enter address type from the following");
+        String addressTypeOption = "S - Current and Permanent addresses are same "
+                + ", P -Permanant Address , C - Current Address , T - Temporary Address , Q - Quit";
+        char addressType = '\0';
+        boolean isCurrentAddressInserted = false;
+        boolean isPermanentAddressInserted = false;
+
+        while ('Q' != addressType) {
+            System.out.println(addressTypeOption);
+            addressType = scanner.next().charAt(0);
+
+            switch (addressType) {
+                case 'S':
+                    if ((true == isPermanentAddressInserted) && (true == isCurrentAddressInserted)) {
+                        System.out.println("Permanent and Current address already entered\nChoose from other options");
+                    } else {
+                        if (insertAddress('S')) {
+                            isPermanentAddressInserted = true;
+                            isCurrentAddressInserted = true;
+                            System.out.println("Permanent and Current address stored successfully");
+                        } else {
+                            System.out.println("Address insertion failure");
+                        }
+                    }
+                    break;
+                case 'P':
+                    if (true == isPermanentAddressInserted) {
+                        System.out.println("Permanent address already entered\nChoose from other options");
+                    } else {
+                        if (insertAddress('P')) {
+                            isPermanentAddressInserted = true;
+                            System.out.println("Permanent address stored successfully");
+                        } else {
+                            System.out.println("Address insertion failure");
+                        }
+                    }
+                    break;
+                case 'C':
+                    if (true == isCurrentAddressInserted) {
+                        System.out.println("Current address already entered\nChoose from other options");
+                    } else {
+                        if (insertAddress('C')) {
+                            isCurrentAddressInserted = true;
+                            System.out.println("Current address stored successfully");
+                        } else {
+                            System.out.println("Address insertion failure");
+                        }
+                    }
+                    break;
+                case 'T':
+                    if (insertAddress('T')) {
+                        System.out.println("Temporary address stored successfully");
+                    } else {
+                        System.out.println("Address insertion failure");
+                    }
+                    break;
+                case 'Q':
+                    addressType = 'Q';
+                    System.out.println("Insertion cancelled");
+                    break;
+                default:
+                    System.out.println("Enter valid option");
+                    break;
+            }
+        }
+    }
+
+    /**
+     * reads employee address details and
+     * request controller to store details
+     *
+     * @param addressType    whether current or permanent or temporary address
+     * @param isInserted     check whether address already entered or not
+     *
+     * @return    true if address stored successfully
+     */
+    private boolean insertAddress(char addressType) throws ClassNotFoundException, SQLException {
+        scanner.skip("[\n\r]{2}");
+        System.out.print("Door Number   : ");
+        String doorNumber = scanner.nextLine();
+        System.out.print("Street        : ");
+        String street = scanner.nextLine();
+        System.out.print("Village       : ");
+        String village = scanner.nextLine();
+        System.out.print("District      : ");
+        String district = scanner.nextLine();
+        System.out.print("State         : ");
+        String state = scanner.nextLine();
+        System.out.print("Pin Code      : ");
+        int pincode = scanner.nextInt();
+
+        return employeeController.insertAddress(addressType, doorNumber, street, village, district, state, pincode);
     }
 
     /**

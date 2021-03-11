@@ -24,7 +24,16 @@ public interface EmployeeDao {
      *
      * @return    true if stored successful else false 
      */
-    boolean createEmployee(Employee employee) throws SQLException, ClassNotFoundException;
+    boolean insertEmployee(Employee employee) throws SQLException, ClassNotFoundException;
+
+    /**
+     * requests database to store employee address object and store it in database
+     * 
+     * @param address   employee address object
+     * 
+     * @return    true if employee address stored successfully else false
+     */
+    boolean insertAddress(Address address) throws ClassNotFoundException, SQLException;
 
     /**
      * used to display details of all employees
@@ -41,7 +50,7 @@ public interface EmployeeDao {
      *
      * @return    object of employee details
      */
-    Employee getEmployee(int employeeId) throws SQLException, ClassNotFoundException;
+    public Employee getEmployee(int employeeId) throws SQLException, ClassNotFoundException;
 
     /**
      * updates name of an employee

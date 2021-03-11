@@ -1,4 +1,3 @@
-
 package com.ideas2it.employeemanagement.service.impl;
 
 import java.sql.Date;
@@ -7,10 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.ideas2it.employeemanagement.dao.impl.EmployeeDaoImpl;
-import com.ideas2it.employeemanagement.service.EmployeeService;
-
-import com.ideas2it.employeemanagement.model.Employee;
 import com.ideas2it.employeemanagement.model.Address;
+import com.ideas2it.employeemanagement.model.Employee;
+import com.ideas2it.employeemanagement.service.EmployeeService;
+import com.ideas2it.sessionfactoy.DatabaseConnection;
 
 /**
  * this class receives the request from the controller to store the details
@@ -27,10 +26,19 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public boolean createEmployee(String name, Date dob, float salary, String mobileNumber)
+    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
             throws ClassNotFoundException, SQLException {
         return employeeDaoImpl
-                .createEmployee(new Employee(name, dob, salary, mobileNumber));
+                .insertEmployee(new Employee(name, dob, salary, mobileNumber));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean insertAddress(char addressType, String doorNumber, String street, String village, String district, String state, int pincode)
+            throws ClassNotFoundException, SQLException {
+        return employeeDaoImpl.insertAddress(new Address(addressType, doorNumber, street, village, district, state, pincode));
     }
 
     /**

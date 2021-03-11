@@ -13,6 +13,7 @@ public class Address {
     private char addressType;
     private String doorNumber;
     private String street;
+    private String village;
     private String district;
     private String state;
     private int pincode;
@@ -21,10 +22,11 @@ public class Address {
     }
 
     public Address(char addressType, String doorNumber, String street
-            , String district, String state, int pincode) {
+            ,String village, String district, String state, int pincode) {
         this.addressType = addressType;
         this.doorNumber = doorNumber;
         this.street = street;
+        this.village = village;
         this.district = district;
         this.state = state;
         this.pincode = pincode;
@@ -40,6 +42,10 @@ public class Address {
 
     public void setStreet(String street) {
         this.street = street;
+    }
+
+    public void setVillage(String village) {
+        this.village = village;
     }
 
     public void setDistrict(String district) {
@@ -66,6 +72,10 @@ public class Address {
         return street;
     }
 
+    public String getVillage() {
+        return village;
+    }
+
     public String getDistrict() {
         return district;
     }
@@ -80,9 +90,10 @@ public class Address {
 
     public String toString() {
         return "\nDoor Number : " + doorNumber
-               + "\nStreet :      " + street
-               + "\nDistrict :    " + district
-               + "\nState :       " + state
-               + "\nPin Code :    " + pincode + "\n";
+               + "\nStreet      : " + street
+               + "\nvillage     : " + village
+               + "\nDistrict    : " + district
+               + "\nState       : " + state
+               + "\nPin Code    : " + pincode + "\n";
     }
 }

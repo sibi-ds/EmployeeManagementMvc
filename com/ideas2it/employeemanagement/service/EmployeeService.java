@@ -17,12 +17,29 @@ public interface EmployeeService {
      *
      * @return    true if employee details stored successfully else false
      */
-    public boolean createEmployee(String name, Date dob, float salary, String mobileNumber)
+    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
             throws ClassNotFoundException, SQLException;
 
     /**
-     * request DAO to
-     * give the deails of all employeea
+     * requests employee address +data base to create employee address object and store it in database
+     * 
+     * @param addressType   whether current or permanent address
+     * @param doorNumber    door number of the employee address
+     * @param street        street name
+     * @param village       village name
+     * @param district      district name
+     * @param state         state name
+     * @param pincode       postal code
+     * 
+     * @return    true if employee address stored successfully else false
+     */
+    public boolean insertAddress(char addressType, String doorNumber, String street
+            , String village, String district, String state, int pincode)
+            throws ClassNotFoundException, SQLException;
+
+    /**
+     * request employee data base to
+     * give the deails of all employees
      *
      * @return    map consisting employee details
      */

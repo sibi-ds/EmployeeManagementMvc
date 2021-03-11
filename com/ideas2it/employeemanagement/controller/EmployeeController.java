@@ -24,13 +24,31 @@ public class EmployeeController {
      * @param name            name of the employee
      * @param dob             Date Of Birth of the employee
      * @param salary          salary of the employee
-     * @param mobileNumber    mobile number of the employee
-     *
+     * @param mobileNumber    mobile number of the employee    
+     * 
      * @return    true if employee details stored successfully else false
      */
-    public boolean createEmployee(String name, Date dob, float salary, String mobileNumber)
+    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
             throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.createEmployee(name, dob, salary, mobileNumber);
+        return employeeServiceImpl.insertEmployee(name, dob, salary, mobileNumber);
+    }
+
+    /**
+     * requests service to create employee details object and store it in database
+     * 
+     * @param addressType   whether current or permanent address
+     * @param doorNumber    door number of the employee address
+     * @param street        street name
+     * @param village       village name
+     * @param district      district name
+     * @param state         state name
+     * @param pincode       postal code
+     * 
+     * @return    true if employee address stored successfully else false
+     */
+    public boolean insertAddress(char addressType, String doorNumber, String street, String village, String district, String state, int pincode)
+            throws ClassNotFoundException, SQLException {
+        return employeeServiceImpl.insertAddress(addressType, doorNumber, street, village, district, state, pincode);
     }
 
     /**
