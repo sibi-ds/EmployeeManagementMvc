@@ -2,8 +2,8 @@ package com.ideas2it.employeemanagement.dao;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ideas2it.employeemanagement.model.Address;
 import com.ideas2it.employeemanagement.model.Employee;
@@ -27,20 +27,19 @@ public interface EmployeeDao {
     boolean insertEmployee(Employee employee) throws SQLException, ClassNotFoundException;
 
     /**
-     * requests database to store employee address object and store it in database
-     * 
-     * @param address   employee address object
-     * 
-     * @return    true if employee address stored successfully else false
+     * insert address details of employee
+     * into the database
+     *
+     * @return    true if address inserted successfully else false
      */
-    boolean insertAddress(Address address) throws ClassNotFoundException, SQLException;
+    public boolean insertAddress(Address address) throws SQLException, ClassNotFoundException;
 
     /**
      * used to display details of all employees
      *
-     * @return    map consisting employee details
+     * @return    list consisting employee details
      */
-    public Map<Integer, String> getEmployees() throws SQLException, ClassNotFoundException;
+    public List<Employee> getEmployees() throws SQLException, ClassNotFoundException;
 
     /**
      * request database to
@@ -51,6 +50,15 @@ public interface EmployeeDao {
      * @return    object of employee details
      */
     public Employee getEmployee(int employeeId) throws SQLException, ClassNotFoundException;
+
+    /**
+     * request database to give all addresses of an employee
+     *
+     * @param employeeId    to update certain employee
+     *
+     * @return    list of addresses 
+     */
+    public List<Address> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
      * updates name of an employee
@@ -88,6 +96,18 @@ public interface EmployeeDao {
      * @return    true if updation successful else false 
      */
     public boolean updateMobileNumber(int employeeId, String mobileNumber) throws SQLException, ClassNotFoundException;
+
+    /**
+     * updates address of an employee
+     *
+     * @param employeeId    employee ID for which details to be updated
+     * @param address Id    to update certain employee's address
+     * @param address       list of string
+     *
+     * @return    true if updation successful else false
+     */
+    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+            throws ClassNotFoundException, SQLException;
 
     /**
      * request database to delete the employee details

@@ -2,8 +2,8 @@ package com.ideas2it.employeemanagement.service.impl;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ideas2it.employeemanagement.dao.impl.EmployeeDaoImpl;
 import com.ideas2it.employeemanagement.model.Address;
@@ -26,27 +26,37 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
-            throws ClassNotFoundException, SQLException {
+    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber
+            , List<List<String>> addresses) throws ClassNotFoundException, SQLException {
+        List<Address> employeeAddresses = new ArrayList<Address>();
+        addresses.forEach((address) -> {
+            employeeAddresses.add(new Address(0, address.get(0), address.get(1), address.get(2)
+                    , address.get(3), address.get(4), address.get(5), address.get(6)));
+        });
         return employeeDaoImpl
-                .insertEmployee(new Employee(name, dob, salary, mobileNumber));
+                .insertEmployee(new Employee(0, name, dob, salary, mobileNumber, employeeAddresses));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean insertAddress(char addressType, String doorNumber, String street, String village, String district, String state, int pincode)
-            throws ClassNotFoundException, SQLException {
-        return employeeDaoImpl.insertAddress(new Address(addressType, doorNumber, street, village, district, state, pincode));
-    }
+    public List<String> getEmployees() throws ClassNotFoundException, SQLException {
+        List<String> employees = new ArrayList<String>();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<Integer, String> getEmployees() throws ClassNotFoundException, SQLException {
-        return employeeDaoImpl.getEmployees();
+        for (Employee employee : employeeDaoImpl.getEmployees()) {
+            String employeeDetails = employee.toString();
+
+            for (Address address : employee.getAddresses()) {
+                employeeDetails = employeeDetails + address.toString();
+            }
+
+            employeeDetails = employeeDetails + "--------------------\n";
+
+            employees.add(employeeDetails);
+        }
+
+        return employees;
     }
 
     /**
@@ -54,7 +64,30 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException {
-        return employeeDaoImpl.getEmployee(employeeId).toString();
+        Employee employee = employeeDaoImpl.getEmployee(employeeId);
+        String employeeDetails = employee.toString();
+
+        for (Address address : employee.getAddresses()) {
+            employeeDetails = employeeDetails + address.toString();
+        }
+
+        employeeDetails = employeeDetails + "--------------------\n";
+
+        return employeeDetails;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
+        List<String> addresses = new ArrayList<String>();
+
+        employeeDaoImpl.getAddresses(employeeId).forEach((address) -> {
+            addresses.add(address.toString());
+        });
+
+        return addresses;
     }
 
     /**
@@ -85,8 +118,18 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateMobileNumber(int employeeId, String mobileNumber) throws ClassNotFoundException, SQLException {
+    public boolean updateMobileNumber(int employeeId, String mobileNumber)
+            throws ClassNotFoundException, SQLException {
         return employeeDaoImpl.updateMobileNumber(employeeId, mobileNumber);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+            throws ClassNotFoundException, SQLException {
+        return employeeDaoImpl.updateAddress(employeeId, addressId, address);
     }
 
     /**
@@ -101,8 +144,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public boolean isEmployeePresent(int employeeId)
-            throws ClassNotFoundException, SQLException {
+    public boolean isEmployeePresent(int employeeId) throws ClassNotFoundException, SQLException {
         return employeeDaoImpl.isEmployeePresent(employeeId);
     }
 }

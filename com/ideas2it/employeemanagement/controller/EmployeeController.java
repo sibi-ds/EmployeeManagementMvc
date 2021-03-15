@@ -2,8 +2,8 @@ package com.ideas2it.employeemanagement.controller;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ideas2it.employeemanagement.service.impl.EmployeeServiceImpl;
 
@@ -25,39 +25,22 @@ public class EmployeeController {
      * @param dob             Date Of Birth of the employee
      * @param salary          salary of the employee
      * @param mobileNumber    mobile number of the employee    
+     * @param addresses       list containing addresses
      * 
      * @return    true if employee details stored successfully else false
      */
-    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
-            throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.insertEmployee(name, dob, salary, mobileNumber);
-    }
-
-    /**
-     * requests service to create employee details object and store it in database
-     * 
-     * @param addressType   whether current or permanent address
-     * @param doorNumber    door number of the employee address
-     * @param street        street name
-     * @param village       village name
-     * @param district      district name
-     * @param state         state name
-     * @param pincode       postal code
-     * 
-     * @return    true if employee address stored successfully else false
-     */
-    public boolean insertAddress(char addressType, String doorNumber, String street, String village, String district, String state, int pincode)
-            throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.insertAddress(addressType, doorNumber, street, village, district, state, pincode);
+    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber
+            , List<List<String>> addresses) throws ClassNotFoundException, SQLException {
+        return employeeServiceImpl.insertEmployee(name, dob, salary, mobileNumber, addresses);
     }
 
     /**
      * request service to
-     * give the deails of all employeea
+     * give the details of all employeea
      *
-     * @return    map consisting employee details
+     * @return    list consisting employee details
      */
-    public Map<Integer, String> getEmployees() throws ClassNotFoundException, SQLException {
+    public List<String> getEmployees() throws ClassNotFoundException, SQLException {
         return employeeServiceImpl.getEmployees();
     }
 
@@ -71,6 +54,18 @@ public class EmployeeController {
      */
     public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException {
         return employeeServiceImpl.getEmployee(employeeId);
+    }
+
+    /**
+     * requests service to give
+     * addresses of an employee
+     *
+     * @param employeeId      employee ID for which details to be updated
+     *
+     * @return    addresses of the employee
+     */
+    public List<String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
+        return employeeServiceImpl.getAddresses(employeeId);
     }
 
     /**
@@ -121,8 +116,24 @@ public class EmployeeController {
      *
      * @return    true if updation successful else false
      */
-    public boolean updateMobileNumber(int employeeId, String mobileNumber) throws ClassNotFoundException, SQLException {
+    public boolean updateMobileNumber(int employeeId, String mobileNumber)
+            throws ClassNotFoundException, SQLException {
         return employeeServiceImpl.updateMobileNumber(employeeId, mobileNumber);
+    }
+
+    /**
+     * requests service to update
+     * address of an employee
+     *
+     * @param employeeId      employee ID for which details to be updated
+     * @param addressId       address ID for which details to be updated
+     * @param address         updated value of the employee's address
+     *
+     * @return    true if updation successful else false
+     */
+    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+            throws ClassNotFoundException, SQLException {
+        return employeeServiceImpl.updateAddress(employeeId, addressId, address);
     }
 
     /**

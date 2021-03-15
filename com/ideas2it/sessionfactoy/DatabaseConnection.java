@@ -30,7 +30,7 @@ public class DatabaseConnection {
         return connection;
     }
 
-    public static DatabaseConnection getConnectionObject() {
+    public static DatabaseConnection connectDatabase() {
         if (null == databaseConnection) {
             databaseConnection = new DatabaseConnection();
         }

@@ -2,8 +2,8 @@ package com.ideas2it.employeemanagement.service;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface EmployeeService {
 
@@ -14,28 +14,12 @@ public interface EmployeeService {
      * @param dob             Date Of Birth of the employee
      * @param salary          salary of the employee
      * @param mobileNumber    mobile number of the employee
+     * @param addresses       list containing addresses
      *
      * @return    true if employee details stored successfully else false
      */
-    public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber)
-            throws ClassNotFoundException, SQLException;
-
-    /**
-     * requests employee address +data base to create employee address object and store it in database
-     * 
-     * @param addressType   whether current or permanent address
-     * @param doorNumber    door number of the employee address
-     * @param street        street name
-     * @param village       village name
-     * @param district      district name
-     * @param state         state name
-     * @param pincode       postal code
-     * 
-     * @return    true if employee address stored successfully else false
-     */
-    public boolean insertAddress(char addressType, String doorNumber, String street
-            , String village, String district, String state, int pincode)
-            throws ClassNotFoundException, SQLException;
+    public boolean insertEmployee(String name, Date dob, float salary
+            , String mobileNumber, List<List<String>> addresses) throws ClassNotFoundException, SQLException;
 
     /**
      * request employee data base to
@@ -43,7 +27,7 @@ public interface EmployeeService {
      *
      * @return    map consisting employee details
      */
-    public Map<Integer, String> getEmployees() throws ClassNotFoundException, SQLException;
+    public List<String> getEmployees() throws ClassNotFoundException, SQLException;
 
     /**
      * request DAO to
@@ -54,6 +38,15 @@ public interface EmployeeService {
      * @return    string of employee details
      */
     public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException;
+
+    /**
+     * request DAO to give all addresses of an employee
+     *
+     * @param employeeId    to update certain employee
+     *
+     * @return    list of addresses 
+     */
+    public List<String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
      * updates name of an employee
@@ -90,7 +83,20 @@ public interface EmployeeService {
      *
      * @return    true if updation successful else false
      */
-    public boolean updateMobileNumber(int employeeId, String mobileNumber) throws ClassNotFoundException, SQLException;
+    public boolean updateMobileNumber(int employeeId, String mobileNumber)
+            throws ClassNotFoundException, SQLException;
+
+    /**
+     * updates address of an employee
+     *
+     * @param employeeId      employee ID for which details to be updated
+     * @param addressId     to update certain employee's address
+     * @param address       list of string
+     *
+     * @return    true if updation successful else false
+     */
+    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+            throws ClassNotFoundException, SQLException;
 
     /**
      * requesting DAO to remove the details of an employee

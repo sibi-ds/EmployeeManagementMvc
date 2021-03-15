@@ -10,19 +10,21 @@ package com.ideas2it.employeemanagement.model;
  */
 public class Address {
 
-    private char addressType;
+    private int addressId;
+    private String addressType;
     private String doorNumber;
     private String street;
     private String village;
     private String district;
     private String state;
-    private int pincode;
+    private String pincode;
     
     private Address() {
     }
 
-    public Address(char addressType, String doorNumber, String street
-            ,String village, String district, String state, int pincode) {
+    public Address(int addressId, String addressType, String doorNumber, String street
+            ,String village, String district, String state, String pincode) {
+        this.addressId = addressId;
         this.addressType = addressType;
         this.doorNumber = doorNumber;
         this.street = street;
@@ -32,7 +34,11 @@ public class Address {
         this.pincode = pincode;
     }
 
-    public void setAddressType(char addressType) {
+    public void setAddressId(int addressId) {
+        this.addressId = addressId;
+    }
+
+    public void setAddressType(String addressType) {
         this.addressType = addressType;
     }
 
@@ -56,11 +62,15 @@ public class Address {
         this.state = state;
     }
 
-    public void setPincode(int pincode) {
+    public void setPincode(String pincode) {
         this.pincode = pincode;
     }
 
-    public char getAddressType() {
+    public int getAddressId() {
+        return addressId;
+    }
+
+    public String getAddressType() {
         return addressType;
     }
 
@@ -84,16 +94,18 @@ public class Address {
         return state;
     }
 
-    public int getPincode() {
+    public String getPincode() {
         return pincode;
     }
 
     public String toString() {
-        return "\nDoor Number : " + doorNumber
-               + "\nStreet      : " + street
-               + "\nvillage     : " + village
-               + "\nDistrict    : " + district
-               + "\nState       : " + state
-               + "\nPin Code    : " + pincode + "\n";
+        return "\nAddress Id    : " + addressId
+               + "\nAddress Type  : " + addressType
+               + "\nDoor Number   : " + doorNumber
+               + "\nStreet        : " + street
+               + "\nvillage       : " + village
+               + "\nDistrict      : " + district
+               + "\nState         : " + state
+               + "\nPin Code      : " + pincode + "\n";
     }
 }

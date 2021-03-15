@@ -1,7 +1,10 @@
 package com.ideas2it.employeemanagement.model;
 
-import java.text.SimpleDateFormat;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.ideas2it.employeemanagement.model.Address;
 
 /**
  * POJO class used to create object of employee that contains
@@ -12,57 +15,79 @@ import java.sql.Date;
  */
 public class Employee {
 
-    private String employeeName;
-    private Date employeeDob;
-    private float employeeSalary;
-    private String employeeMobileNumber;
+    private int id;
+    private String name;
+    private Date dateOfBirth;
+    private float salary;
+    private String mobileNumber;
+    private List<Address> addresses;
 
     private Employee() {
     }
 
-    public Employee(String name, Date dob, float salary, String mobileNumber) {
-        this.employeeName = name;
-        this.employeeDob = dob;
-        this.employeeSalary = salary;
-        this.employeeMobileNumber = mobileNumber;
+    public Employee(int id, String name, Date dateOfBirth, float salary
+            , String mobileNumber, List<Address> addresses) {
+        this.id = id;
+        this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.salary = salary;
+        this.mobileNumber = mobileNumber;
+        this.addresses = addresses;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setName(String name) {
-        this.employeeName = name;
+        this.name = name;
     }
     
-    public void setDob(Date date) {
-        this.employeeDob = date;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public void setSalary(float salary) {
-        this.employeeSalary = salary;
+        this.salary = salary;
     }
 
     public void setMobileNumber(String mobileNumber) {
-        this.employeeMobileNumber = mobileNumber;
+        this.mobileNumber = mobileNumber;
+    }
+
+    public void SetAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
-        return employeeName;
+        return name;
     }
 
-    public Date getDob() {
-        return employeeDob;
+    public Date getDateOfBirth() {
+        return dateOfBirth;
     }
 
     public float getSalary() {
-        return employeeSalary;
+        return salary;
     }
 
     public String getMobileNumber() {
-        return employeeMobileNumber;
+        return mobileNumber;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
     }
 
     public String toString() {
-        return "\nNAME          : " + employeeName
-               + "\nDOB           : " + employeeDob
-               + "\nSALARY        : " + employeeSalary
-               + "\nMOBILE NUMBER : " + employeeMobileNumber + "\n" ;
+        return "\nEMPLOYEE ID   : " + id
+               + "\nNAME          : " + name
+               + "\nDOB           : " + dateOfBirth
+               + "\nSALARY        : " + salary
+               + "\nMOBILE NUMBER : " + mobileNumber + "\n" ;
     }
 }
