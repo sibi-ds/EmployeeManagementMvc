@@ -3,8 +3,11 @@ package com.ideas2it.employeemanagement.service.impl;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.ideas2it.employeemanagement.dao.EmployeeDao;
 import com.ideas2it.employeemanagement.dao.impl.EmployeeDaoImpl;
 import com.ideas2it.employeemanagement.model.Address;
 import com.ideas2it.employeemanagement.model.Employee;
@@ -20,7 +23,7 @@ import com.ideas2it.sessionfactoy.DatabaseConnection;
  */
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private EmployeeDaoImpl employeeDaoImpl = new EmployeeDaoImpl();
+    private EmployeeDao employeeDaoImpl = new EmployeeDaoImpl();
 
     /**
      * {@inheritDoc}
@@ -44,7 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<String> getEmployees() throws ClassNotFoundException, SQLException {
         List<String> employees = new ArrayList<String>();
 
-        for (Employee employee : employeeDaoImpl.getEmployees()) {
+        employeeDaoImpl.getEmployees().forEach((employee) -> {
             String employeeDetails = employee.toString();
 
             for (Address address : employee.getAddresses()) {
@@ -54,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeDetails = employeeDetails + "--------------------\n";
 
             employees.add(employeeDetails);
-        }
+        });
 
         return employees;
     }
@@ -80,11 +83,11 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public List<String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
-        List<String> addresses = new ArrayList<String>();
+    public Map<Integer, String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
+        Map<Integer, String> addresses = new LinkedHashMap<Integer, String>();
 
-        employeeDaoImpl.getAddresses(employeeId).forEach((address) -> {
-            addresses.add(address.toString());
+        employeeDaoImpl.getAddresses(employeeId).forEach((addressId, address) -> {
+            addresses.put(addressId, address.toString());
         });
 
         return addresses;
@@ -127,9 +130,30 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+    public boolean addAddress(int employeeId, List<String> address)
             throws ClassNotFoundException, SQLException {
-        return employeeDaoImpl.updateAddress(employeeId, addressId, address);
+        return employeeDaoImpl.addAddress(employeeId
+                , new Address(0, address.get(0), address.get(1), address.get(2)
+                , address.get(3), address.get(4), address.get(5), address.get(6)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateAddressValues(int employeeId, int addressId, List<String> address)
+            throws ClassNotFoundException, SQLException {
+        return employeeDaoImpl.updateAddressValues(employeeId, addressId
+                , new Address(addressId, address.get(0), address.get(1), address.get(2)
+                , address.get(3), address.get(4), address.get(5), address.get(6)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException {
+        return employeeDaoImpl.deleteAddress(employeeId, addressId);
     }
 
     /**
@@ -138,6 +162,28 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public boolean deleteEmployee(int employeeId) throws ClassNotFoundException, SQLException {
         return employeeDaoImpl.deleteEmployee(employeeId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getDeleted() throws ClassNotFoundException, SQLException {
+        List<String> deletedEmployees = new ArrayList<String>();
+
+        employeeDaoImpl.getDeleted().forEach((employee) -> {
+            deletedEmployees.add(employee.toString());
+        });
+
+        return deletedEmployees;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException {
+        return employeeDaoImpl.restoreDeleted(employeeId);
     }
 
     /**

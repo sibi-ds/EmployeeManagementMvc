@@ -3,7 +3,9 @@ package com.ideas2it.employeemanagement.view;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import com.ideas2it.employeemanagement.controller.EmployeeController;
@@ -25,10 +27,10 @@ public class EmployeeView {
         byte option = 0;    // to track user's choice
 
         System.out.println("select an option to perform a particular operation on an employee's details");
-        String optionStatement = "1 - Create , 2 - Display all employees ,"
-                + " 3 - Display an employee , 4 - Update , 5 - Delete , 6 - Exit" ;
+        String optionStatement = "1 - Create Employee , 2 - Display All Employees ,"
+                + " 3 - Display Employee , 4 - Update Employee , 5 - Delete Employee , 6 - Restore Employee , 7 - Exit" ;
 
-        while (6 != option) {
+        while (7 != option) {
             System.out.println(optionStatement);
             option = scanner.nextByte();
             scanner.skip("[\n\r]{2}");
@@ -50,6 +52,9 @@ public class EmployeeView {
                     deleteEmployee();
                     break;
                 case 6:
+                    restoreEmployee();
+                    break;
+                case 7:
                     break;
                 default:
                     System.out.println("Enter valid option");
@@ -89,49 +94,32 @@ public class EmployeeView {
 
         System.out.println("\n-----Enter address details-----\n");
         System.out.println("Enter address type from the following");
-        String addressTypeOption = "S - Current and Permanent addresses are same "
-                + ", P -Permanant Address , C - Current Address , T - Temporary Address , Q - Quit";
-        char addressType = '\0';
+        String addressTypeStatement 
+                = "1 - Permanant Address , 2 - Temporary Address , 3 - Exit from address insertion";
+        byte addressTypeOption = 0;
         boolean isPermanentAddressInserted = false;
-        boolean isCurrentAddressInserted = false;
 
-        while ('Q' != addressType) {
-            System.out.println(addressTypeOption);
-            addressType = scanner.next().charAt(0);
+        while (3 != addressTypeOption) {
+            System.out.println(addressTypeStatement);
+            addressTypeOption = scanner.nextByte();
 
-            switch (addressType) {
-                case 'S':
-                    if (isCurrentAddressInserted && isPermanentAddressInserted) {
-                        System.out.println("Permanent and Current address inserted already");
-                    } else {
-                        boolean isBothAddressesInserted = addresses.add(insertAddress("permanent and current"));
-                        isPermanentAddressInserted = isBothAddressesInserted;
-                        isCurrentAddressInserted = isBothAddressesInserted;
-                    }
-                    break;
-                case 'P':
+            switch (addressTypeOption) {
+                case 1:
                     if (isPermanentAddressInserted) {
                         System.out.println("Permanent address inserted already");
                     } else {
                         isPermanentAddressInserted = addresses.add(insertAddress("permanent"));
                     }
                     break;
-                case 'C':
-                    if (isCurrentAddressInserted) {
-                        System.out.println("Permanent address inserted already");
-                    } else {
-                        isCurrentAddressInserted = addresses.add(insertAddress("current"));
-                    }
-                    break;
-                case 'T':
+                case 2:
                     if (addresses.add(insertAddress("temporary"))) {
                         System.out.println("temporary address inserted successfully");
                     } else {
                         System.out.println("temporary address insertion failure");
                     }
                     break;
-                case 'Q':
-                    System.out.println("Insertion cancelled");
+                case 3:
+                    System.out.println("Exited from address insertion");
                     break;
                 default:
                     System.out.println("Enter valid option");
@@ -181,10 +169,16 @@ public class EmployeeView {
      * give the deails of all employeea
      */
     private void getEmployees() throws ClassNotFoundException, SQLException {
-        System.out.println("\n-----Employee Database-----\n");
-        employeeController.getEmployees().forEach((employeeDetails) -> {
-            System.out.println(employeeDetails);
-        });
+        List<String> employees = employeeController.getEmployees();
+
+        if (0 == employees.size()) {
+            System.out.println("Empty Database");
+        } else {
+            System.out.println("\n-----Employee Database-----\n");
+            employees.forEach((employeeDetails) -> {
+                System.out.println(employeeDetails);
+            });
+        }
     }
 
     /**
@@ -194,7 +188,7 @@ public class EmployeeView {
      * @param employeeId    which need to be extracted from the database
      */
     public void getEmployee() throws ClassNotFoundException, SQLException {
-        System.out.println("Enter employee ID to get details : ");
+        System.out.print("Enter employee ID to get details : ");
         int employeeId = scanner.nextInt();
 
         if (!isEmployeePresent(employeeId)) {
@@ -208,40 +202,41 @@ public class EmployeeView {
      * updates certain detail of an employee
      */
     private void updateEmployee() throws ClassNotFoundException, SQLException {
-        System.out.println("Enter employeeId to update the details");
+        System.out.print("Enter employeeId to update the details : ");
         int employeeId = scanner.nextInt();
 
-        if (!employeeController.isEmployeePresent(employeeId)) {
+        if (!isEmployeePresent(employeeId)) {
             System.out.println("Employee details not present");
         } else {
             System.out.println("Choose which detail need to be updated");
-            char option = '\0';
+            byte updationOption = 0;
             String updationOptionStatement
-                    = "N - Name , D - DOB , S - Salary , M - Mobile number , A - Address , C - Cancel Updation";
+                    = "1 - Update Name , 2 -Update DOB , 3 - Update Salary , 4 - Update Mobile number"
+                    + " , 5 - Update Address , 6 - Exit from employee updation menu";
 
-            while ('C' != option) {
+            while (6 != updationOption) {
                 System.out.println(updationOptionStatement);
-                char updationParameter = scanner.next().charAt(0);
+                updationOption = scanner.nextByte();
 
-                switch (updationParameter) {
-                    case 'N':
+                switch (updationOption) {
+                    case 1:
                         updateName(employeeId);
                         break;
-                    case 'D':
+                    case 2:
                         updateDob(employeeId);
                         break;
-                    case 'S':
+                    case 3:
                         updateSalary(employeeId);
                         break;
-                    case 'M':
+                    case 4:
                         updateMobileNumber(employeeId);
                         break;
-                    case 'A':
+                    case 5:
                         updateAddress(employeeId);
                         break;
-                    case 'C':
-                        System.out.println("Updation cancelled");
-                        option = 'C';
+                    case 6:
+                        System.out.println("Exited from updation menu");
+                        updationOption = 6;
                         break;
                     default:
                         System.out.println("Enter valid option");
@@ -322,47 +317,185 @@ public class EmployeeView {
      * @param employeeId    ID for which address should be updated
      */
     private void updateAddress(int employeeId) throws ClassNotFoundException, SQLException {
-        System.out.println("\n-----The addresses for your Employee Id-----");
+        Map<Integer, String> addresses = employeeController.getAddresses(employeeId);
+        List<Integer> addressIds = new ArrayList<>(addresses.keySet());
 
-        employeeController.getAddresses(employeeId).forEach((address) -> {
-            System.out.println(address);
-        });
+        byte addressUpdationOption = 0;
+        String addressUpdationStatement = "1 - Add Address , 2 - Update Address"
+                + " , 3 - Delete Address , 4 - Display Addresses Available , 5 - Exit From Address Updation Menu";
 
-        System.out.print("Enter corresponding Address ID to update : ");
-        int addressId = scanner.nextInt();
+            System.out.println("Select an opeartion to perform on an address");
 
-        System.out.println("Enter address type\n"
-                + "S - Permanent and current addresses are same , P - Permanent "
-                + ", C - Current , T - Temporary , Q - Quit");
+            while (5 != addressUpdationOption) {
+                System.out.println(addressUpdationStatement);
+                addressUpdationOption = scanner.nextByte();
 
-        char addressTypeOption = scanner.next().charAt(0);
+                switch (addressUpdationOption) {
+                    case 1:
+                        addresses = addAddress(employeeId);
+                        addressIds = new ArrayList<>(addresses.keySet());
+                        break;
+                    case 2:
+                        addresses = updateAddressValues(employeeId, addressIds);
+                        addressIds = new ArrayList<>(addresses.keySet());
+                        break;
+                    case 3:
+                        addresses = deleteAddress(employeeId, addressIds);
+                        addressIds = new ArrayList<>(addresses.keySet());
+                        break;
+                    case 4:
+                        getAddresses(employeeId, addressIds, addresses);
+                        break;
+                    case 5:
+                        addressUpdationOption = 5;
+                        break;
+                    default:
+                        System.out.println("Enter valid option");
+                        break;
+                }
+            }  
+    }
+
+    /**
+     * reads the employeeId from the user and request
+     * the controller to add an address to an employee
+     *
+     * @param employeeId    in which address should be added
+     *
+     * @return    updated details of the address database
+     */
+    private Map<Integer, String> addAddress(int employeeId) throws ClassNotFoundException, SQLException {
+        System.out.println("Choose address type\n"
+                + "1 - Permanent Address , 2 - Temporary Address , 3 - Exit from address insertion");
+
+        byte addressTypeOption = scanner.nextByte();
         String addressType = null;
 
         switch (addressTypeOption) {
-            case 'S':
-                addressType = "permanent and current";
-                break;
-            case 'P':
+            case 1:
                 addressType = "permanent";
                 break;
-            case 'C':
-                addressType = "current";
-                break;
-            case 'T':
+            case 2:
                 addressType = "temporary";
                 break;
-            case 'Q':
-                System.out.println("Updation cancelled");
+            case 3:
+                addressTypeOption = 3;
                 break;
             default:
-                System.out.println("Option is incorrect");
+                System.out.println("Incorrect option");
                 break;
-        }        
+        }
 
-        if (employeeController.updateAddress(employeeId, addressId, insertAddress(addressType))) {
-            System.out.println("Address updated successfully");
+        if (3 == addressTypeOption) {
+            System.out.println("Exited from new address insertion");
+        } else if (employeeController.addAddress(employeeId, insertAddress(addressType))) {
+            System.out.println("Address added successfully");
         } else {
-            System.out.println("Address updation failure");
+            System.out.println("Address insertion failure");
+        }
+
+        return employeeController.getAddresses(employeeId);
+    } 
+
+    /**
+     * reads the employeeId from the user and request
+     * the controller to update values of an address
+     *
+     * @param employeeId    for which address should be updated
+     * @param addressIds    list of address IDs
+     *
+     * @return    updated details of the address database
+     */
+    private Map<Integer, String> updateAddressValues(int employeeId, List<Integer> addressIds)
+            throws ClassNotFoundException, SQLException {
+
+        if (0 == addressIds.size()) {
+            System.out.println("No addresses stored in the database");
+        } else {
+            System.out.print("Enter address ID to be updated : ");
+            int addressId = scanner.nextInt();
+
+            System.out.println("\nChoose address type\n"
+                    + "1 - Permanent Address , 2 - Temporary Address  , 3 - Addression insertion cancelled");
+
+            byte addressTypeOption = scanner.nextByte();
+            String addressType = null;
+
+            switch (addressTypeOption) {
+                case 1:
+                    addressType = "permanent";
+                    break;
+                case 2:
+                    addressType = "temporary";
+                    break;
+                case 3:
+                    addressTypeOption = 3;
+                    break;
+                default:
+                    System.out.println("Enter valid option");
+                    break;
+            }
+
+            if (3 == addressTypeOption) {
+                System.out.println("Exited from address values updation");
+            } else if ((1 <= addressId) && (addressIds.size() >= addressId)) {
+                if (employeeController
+                        .updateAddressValues(employeeId, addressIds.get(addressId - 1), insertAddress(addressType))) {
+                    System.out.println("Address values updated successfully");
+                } else {
+                    System.out.println("Address values updation failure");
+                }
+            } else {
+                System.out.println("Invalid address ID");
+            }
+        }
+        return employeeController.getAddresses(employeeId);
+    } 
+
+    /**
+     * reads the addressId from the user and request
+     * the controller to remove that address of an employee
+     *
+     * @param employeeId    for which address should be updated
+     * @param addressIds    list of address IDs
+     *
+     * @return    updated details of the address database
+     */
+    private Map<Integer, String> deleteAddress(int employeeId, List<Integer> addressIds)
+            throws ClassNotFoundException, SQLException {
+        if (0 == addressIds.size()) {
+            System.out.println("No addresses stored in the database");
+        } else {
+            System.out.print("Enter address ID to be deleted : ");
+            int addressId = scanner.nextInt();
+
+            if ((addressId >= 1) && (addressId <= addressIds.size())) {
+                if (employeeController.deleteAddress(employeeId, addressIds.get(addressId - 1))) {
+                    System.out.println("address deletion successful");
+                } else {
+                    System.out.println("address deletion failure");
+                }
+            } else {
+                System.out.println("Address not exist");
+            }
+        }
+        return employeeController.getAddresses(employeeId);
+    } 
+
+    /**
+     * requests service to get addresses for an employee
+     *
+     * @param employeeId    for which addresses to be displayed
+     */
+    private void getAddresses(int employeeId, List<Integer> addressIds, Map<Integer, String> addresses)
+            throws ClassNotFoundException, SQLException {
+        if (0 == addressIds.size()) {
+            System.out.println("No addresses stored for this employee");
+        } else {
+            System.out.println("\n-----The stored addresses of your Employee Id-----");
+            addresses.forEach((addressId, address) -> {
+                System.out.println(address);
+            });
         }
     }
 
@@ -374,12 +507,62 @@ public class EmployeeView {
         System.out.print("Enter employee ID to delete the employee : ");
         int employeeId = scanner.nextInt();
 
-        if (!employeeController.isEmployeePresent(employeeId)) {
+        if (!isEmployeePresent(employeeId)) {
             System.out.println("Employee details not present");
         } else if (employeeController.deleteEmployee(employeeId)) {
             System.out.println("Deletion successful");
         } else {
             System.out.println("Deletion failure");
+        }
+    }
+
+    /**
+     * restore the employee details that had been deleted
+     */
+    private void restoreEmployee() throws ClassNotFoundException, SQLException {
+        System.out.println("-----Deleted Employee List-----");
+        List<String> deletedEmployees = employeeController.getDeleted();
+
+        if (0 != deletedEmployees.size()) {
+            deletedEmployees.forEach((employeeId) -> {
+                System.out.println(employeeId);
+            });
+
+            byte restoreOption = 0;
+            String restoreOptionStatement = "1 - Restore an Employee Details"
+                   + " , 2 - Display Deleted , 3 - Exit from restore menu";
+
+            System.out.println("Select from the following option");
+            while (3 != restoreOption) {
+                System.out.println(restoreOptionStatement);
+                restoreOption = scanner.nextByte();
+
+                switch (restoreOption) {
+                    case 1:
+                        System.out.print("Enter employee ID that to be restored : ");
+                        int employeeId = scanner.nextInt();
+                    
+                        if (isEmployeePresent(employeeId)) {
+                                System.out.println("Employee details already in database");
+                        } else if (employeeController.restoreDeleted(employeeId)) {
+                                System.out.println("Employee restored successfully");
+                        } else {
+                            System.out.println("Restoration failure");
+                        }
+                        break;
+                    case 2:
+                        restoreEmployee();
+                        break;
+                    case 3:
+                        System.out.println("Exited from the restore menu");
+                        break;
+                    default:
+                        System.out.println("Enter valid option");
+                        break;
+                }
+            }
+        } else {
+            System.out.println("No deleted records");
         }
     }
 

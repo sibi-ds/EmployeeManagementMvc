@@ -3,7 +3,9 @@ package com.ideas2it.employeemanagement.service;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface EmployeeService {
 
@@ -44,9 +46,9 @@ public interface EmployeeService {
      *
      * @param employeeId    to update certain employee
      *
-     * @return    list of addresses 
+     * @return    map containing address ID and address details
      */
-    public List<String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
+    public Map<Integer, String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
      * updates name of an employee
@@ -87,16 +89,37 @@ public interface EmployeeService {
             throws ClassNotFoundException, SQLException;
 
     /**
-     * updates address of an employee
+     * requests DAO to add address to an employee
+     *
+     * @param employeeId      employee ID for which details to be added
+     * @param address         employee address details
+     *
+     * @return    true if address insertion successful else false
+     */
+    public boolean addAddress(int employeeId, List<String> address)
+            throws ClassNotFoundException, SQLException;
+
+    /**
+     * requests DAO to update address of an employee
      *
      * @param employeeId      employee ID for which details to be updated
-     * @param addressId     to update certain employee's address
-     * @param address       list of string
+     * @param addressId       address ID for which details to be updated
+     * @param address         updated values of the employee address
      *
-     * @return    true if updation successful else false
+     * @return    true if address updation successful else false
      */
-    public boolean updateAddress(int employeeId, int addressId, List<String> address)
+    public boolean updateAddressValues(int employeeId, int addressId, List<String> address)
             throws ClassNotFoundException, SQLException;
+
+    /**
+     * requests DAO to remove an address of an employee
+     *
+     * @param employeeId      employee ID for which an address to be deleted
+     * @param addressId       address ID for which details to be deleted
+     *
+     * @return    true if address deletion successful else false
+     */
+    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException;
 
     /**
      * requesting DAO to remove the details of an employee
@@ -104,6 +127,22 @@ public interface EmployeeService {
      * @return    true if deletion successful else false
      */
     public boolean deleteEmployee(int employeeId) throws ClassNotFoundException, SQLException;
+
+    /**
+     * requests DAO to restore get deleted employees list
+     * 
+     * @return    list of deleted employee IDs
+     */
+    public List<String> getDeleted() throws ClassNotFoundException, SQLException;
+
+    /**
+     * requests DAO to restore deleted employee details
+     * 
+     * @param employeeId    which need to be restored
+     * 
+     * @return    true if restoration successful else false
+     */
+    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
      * used to check whether the details of an employee present or not
