@@ -54,7 +54,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeDetails = employeeDetails + address.toString();
             }
 
-            employeeDetails = employeeDetails + "--------------------\n";
+            employeeDetails = employeeDetails + "\n--------------------";
 
             employees.add(employeeDetails);
         });

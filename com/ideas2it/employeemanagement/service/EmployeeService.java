@@ -24,37 +24,35 @@ public interface EmployeeService {
             , String mobileNumber, List<List<String>> addresses) throws ClassNotFoundException, SQLException;
 
     /**
-     * request employee data base to
-     * give the deails of all employees
+     * requests DAO to give the deails of all employees
      *
-     * @return    map consisting employee details
+     * @return    list consisting employees details
      */
     public List<String> getEmployees() throws ClassNotFoundException, SQLException;
 
     /**
-     * request DAO to
-     * give the deails of the employee
+     * requests DAO to give the deails of the employee
      *
-     * @param employeeId    which need to be extracted from the database
+     * @param employeeId    which need to be retrieved from the database
      *
-     * @return    string of employee details
+     * @return    string of employee's details
      */
     public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
-     * request DAO to give all addresses of an employee
+     * requests DAO to give all addresses of an employee
      *
      * @param employeeId    to update certain employee
      *
-     * @return    map containing address ID and address details
+     * @return    map containing address IDs and addresses
      */
     public Map<Integer, String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
      * updates name of an employee
      *
-     * @param employeeId    to update certain employee
-     * @param name    updated name value
+     * @param employeeId    which need to be updated
+     * @param name          updated name value
      *
      * @return    true if updation successful else false
      */
@@ -62,8 +60,9 @@ public interface EmployeeService {
 
     /**
      * updates Date Of Birth of an employee
-     * @param employeeId    to update certain employee
-     * @param name    updated date of birth value
+     *
+     * @param employeeId    which need to be updated
+     * @param name          updated date of birth value
      *
      * @return    true if updation successful else false
      */
@@ -71,8 +70,9 @@ public interface EmployeeService {
 
     /**
      * updates salary of an employee
-     * @param employeeId    to update certain employee
-     * @param name    updated salary value
+     *
+     * @param employeeId    which need to be updated
+     * @param name          updated salary value
      *
      * @return    true if updation successful else false
      */
@@ -80,8 +80,9 @@ public interface EmployeeService {
 
     /**
      * updates mobile number of an employee
-     * @param employeeId    to update certain employee
-     * @param name    updated mobile number value
+     *
+     * @param employeeId    which need to be updated
+     * @param name          updated mobile number value
      *
      * @return    true if updation successful else false
      */
@@ -131,7 +132,7 @@ public interface EmployeeService {
     /**
      * requests DAO to restore get deleted employees list
      * 
-     * @return    list of deleted employee IDs
+     * @return    list of deleted employees
      */
     public List<String> getDeleted() throws ClassNotFoundException, SQLException;
 
@@ -145,13 +146,12 @@ public interface EmployeeService {
     public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException;
 
     /**
-     * used to check whether the details of an employee present or not
+     * checks whether the details of an employee present or not
      *
      * @param employeeId    employeeId to verify the exixtence
      *
      * @return    returns true if employee present else return false
      */
     public boolean isEmployeePresent(int employeeId)
-            throws ClassNotFoundException, SQLException;
-        
+            throws ClassNotFoundException, SQLException; 
 }

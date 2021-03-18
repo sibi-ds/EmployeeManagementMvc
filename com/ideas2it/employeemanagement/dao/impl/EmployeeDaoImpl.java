@@ -106,20 +106,52 @@ public class EmployeeDaoImpl implements EmployeeDao {
         Connection connection = databaseConnection.getConnection();
 
         PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT id from employee WHERE is_deleted = false");
+                .prepareStatement("SELECT employee.id, employee.name, employee.date_of_birth, employee.salary, employee.mobile_number,"
+                + " address.address_id, address.address_type, address.door_number, address.street, address.village,"
+                + " address.district, address.state, address.pincode FROM employee LEFT JOIN address ON"
+                + " employee.id = address.employee_id AND address.is_deleted = false WHERE employee.is_deleted = false");
 
-        ResultSet employeeIds = preparedStatement.executeQuery();
+        List<Employee> employeesDetails = new ArrayList<Employee>();
 
-        List<Employee> employees = new ArrayList<Employee>();
+        ResultSet employees = preparedStatement.executeQuery();
 
-        while (employeeIds.next()) {
-            employees.add(getEmployee(employeeIds.getInt("id")));            
+        boolean isRowAvailable = true;
+
+        if (employees.next()) {
+            while (isRowAvailable) {
+                List<Address> addressesAvailable = new ArrayList<Address>();
+
+                int employeeId = employees.getInt("id");
+                String name = employees.getString("name");
+                Date dob = employees.getDate("date_of_birth");
+                float salary = employees.getFloat("salary");
+                String mobileNumber = employees.getString("mobile_number");
+
+                int addressId = 1;
+
+                while (employees.getInt("id") == employeeId) {
+                    if (0 != employees.getInt("address_id")) {
+                        addressesAvailable.add(new Address(addressId, employees.getString("address_type")
+                                , employees.getString("door_number"), employees.getString("street")
+                                , employees.getString("village"), employees.getString("district")
+                                , employees.getString("state"), employees.getString("pincode")));
+
+                        addressId++;
+                    }
+
+                    if (!employees.next()) {
+                        isRowAvailable = false;
+                        break;
+                    }
+                }
+                employeesDetails.add(new Employee(employeeId, name, dob, salary, mobileNumber, addressesAvailable));
+            }        
         }
 
         preparedStatement.close();
         connection.close();
 
-        return employees;
+        return employeesDetails;
     }
 
     /**
@@ -131,32 +163,52 @@ public class EmployeeDaoImpl implements EmployeeDao {
         Connection connection = databaseConnection.getConnection();
 
         PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT name, date_of_birth, salary, mobile_number FROM employee"
-                 + " WHERE id = ? AND is_deleted = false");
+                .prepareStatement("SELECT employee.name, employee.date_of_birth, employee.salary, employee.mobile_number,"
+                + " address.address_id, address.address_type, address.door_number, address.street, address.village,"
+                + " address.district, address.state, address.pincode FROM employee LEFT JOIN address ON"
+                + " employee.id = address.employee_id AND address.is_deleted = false WHERE employee.id = ? AND employee.is_deleted = false");
         
         preparedStatement.setInt(1,employeeId);
 
-        ResultSet employee = preparedStatement.executeQuery();
+        ResultSet employeeDetails = preparedStatement.executeQuery();
 
-        if (employee.next()) {
-            String name = employee.getString("name");
-            Date dob = employee.getDate("date_of_birth");
-            float salary = employee.getFloat("salary");
-            String mobileNumber = employee.getString("mobile_number");
+        Employee employee = null;
 
-            List<Address> addresses = new ArrayList<Address>();
+        if (employeeDetails.next()) {
+            List<Address> addressesAvailable = new ArrayList<Address>();
 
-            getAddresses(employeeId).forEach((addressId, address) -> {
-                addresses.add(address);
-            });
+            String name = employeeDetails.getString("name");
+            Date dob = employeeDetails.getDate("date_of_birth");
+            float salary = employeeDetails.getFloat("salary");
+            String mobileNumber = employeeDetails.getString("mobile_number");
 
-            return new Employee(employeeId, name, dob, salary, mobileNumber, addresses);
+            int addressId = 1;
+
+            if (0 != employeeDetails.getInt("address_id")) {
+                addressesAvailable.add(new Address(addressId, employeeDetails.getString("address_type")
+                        , employeeDetails.getString("door_number"), employeeDetails.getString("street")
+                        , employeeDetails.getString("village"), employeeDetails.getString("district")
+                        , employeeDetails.getString("state"), employeeDetails.getString("pincode")));
+                addressId++;
+            }
+
+            while (employeeDetails.next()) {
+                if (0 != employeeDetails.getInt("address_id")) {
+                    addressesAvailable.add(new Address(addressId, employeeDetails.getString("address_type")
+                            , employeeDetails.getString("door_number"), employeeDetails.getString("street")
+                            , employeeDetails.getString("village"), employeeDetails.getString("district")
+                            , employeeDetails.getString("state"), employeeDetails.getString("pincode")));
+                    addressId++;
+                }
+            }
+
+            employee = new Employee(employeeId, name, dob, salary, mobileNumber, addressesAvailable);
         }
 
         preparedStatement.close();
         connection.close();
 
-        return null;
+        return employee;
     }
 
     /**

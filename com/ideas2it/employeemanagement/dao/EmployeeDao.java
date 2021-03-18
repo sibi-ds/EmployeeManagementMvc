@@ -24,13 +24,12 @@ public interface EmployeeDao {
      *
      * @param  employee    object of employee details
      *
-     * @return    true if stored successful else false 
+     * @return    true if employee details stored successfully else false 
      */
     boolean insertEmployee(Employee employee) throws SQLException, ClassNotFoundException;
 
     /**
-     * insert address details of employee
-     * into the database
+     * insert address details of employee into the database
      *
      * @return    true if address inserted successfully else false
      */
@@ -44,10 +43,9 @@ public interface EmployeeDao {
     public List<Employee> getEmployees() throws SQLException, ClassNotFoundException;
 
     /**
-     * request database to
-     * give the deails of the employee
+     * requests database to give the details of an employee
      *
-     * @param employeeId    which need to be extracted from the database
+     * @param employeeId    which need to be retrieved from the database
      *
      * @return    object of employee details
      */
@@ -66,7 +64,7 @@ public interface EmployeeDao {
      * updates name of an employee
      *
      * @param employeeId    to update certain employee
-     * @param name    updated name value
+     * @param name          updated name value
      *
      * @return    true if updation successful else false 
      */
@@ -74,8 +72,9 @@ public interface EmployeeDao {
 
     /**
      * updates Date Of Birth of an employee
+     *
      * @param employeeId    to update certain employee
-     * @param name    updated date of birth value
+     * @param name          updated date of birth value
      *
      * @return    true if updation successful else false 
      */
@@ -83,8 +82,9 @@ public interface EmployeeDao {
 
     /**
      * updates salary of an employee
+     *
      * @param employeeId    to update certain employee
-     * @param name    updated salary value
+     * @param name          updated salary value
      *
      * @return    true if updation successful else false 
      */
@@ -92,8 +92,9 @@ public interface EmployeeDao {
 
     /**
      * updates mobile number of an employee
+     *
      * @param employeeId    to update certain employee
-     * @param name    updated mobile number value
+     * @param name          updated mobile number value
      *
      * @return    true if updation successful else false 
      */
@@ -102,10 +103,10 @@ public interface EmployeeDao {
     /**
      * requests service to add address to an employee
      *
-     * @param employeeId      employee ID for which details to be added
+     * @param employeeId      employee ID for which address to be added
      * @param address         employee address details
      *
-     * @return    true if address insertion successful else false
+     * @return    true if address insertion successfully else false
      */
     public boolean addAddress(int employeeId, Address address)
             throws ClassNotFoundException, SQLException;
@@ -113,9 +114,9 @@ public interface EmployeeDao {
     /**
      * requests database to update address of an employee
      *
-     * @param employeeId      employee ID for which details to be updated
-     * @param addressId       address ID for which details to be updated
-     * @param address         updated values of the employee address
+     * @param employeeId      employee ID for which address to be updated
+     * @param addressId       address ID for which address to be updated
+     * @param address         updated values of the employee's address
      *
      * @return    true if address updation successful else false
      */
@@ -126,7 +127,7 @@ public interface EmployeeDao {
      * requests database to remove an address of an employee
      *
      * @param employeeId      employee ID for which an address to be deleted
-     * @param addressId       address ID for which details to be deleted
+     * @param addressId       address ID which address to be deleted
      *
      * @return    true if address deletion successful else false
      */
@@ -142,14 +143,14 @@ public interface EmployeeDao {
     boolean deleteEmployee(int employeeId) throws SQLException, ClassNotFoundException;
 
     /**
-     * requests database to restore get deleted employees list
+     * requests database to get deleted employees list
      * 
-     * @return    list of deleted employee IDs
+     * @return    list of deleted employees details
      */
     public List<Employee> getDeleted() throws ClassNotFoundException, SQLException;
 
     /**
-     * requests database to restore deleted employee details
+     * requests database to restore deleted employee's details
      * 
      * @param employeeId    which need to be restored
      * 

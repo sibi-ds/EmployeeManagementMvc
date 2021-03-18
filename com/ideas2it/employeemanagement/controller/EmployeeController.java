@@ -38,8 +38,7 @@ public class EmployeeController {
     }
 
     /**
-     * request service to
-     * give the details of all employeea
+     * requests service to give the details of all employees 
      *
      * @return    list consisting employee details
      */
@@ -48,20 +47,18 @@ public class EmployeeController {
     }
 
     /**
-     * request service to
-     * give the deails of the employee
+     * requests service to give the details of an employee
      *
      * @param employeeId    which need to be extracted from the database
      *
-     * @return    string of employee details
+     * @return    string containing employee details
      */
     public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException {
         return employeeServiceImpl.getEmployee(employeeId);
     }
 
     /**
-     * requests service to give
-     * addresses of an employee
+     * requests service to give addresses of an employee
      *
      * @param employeeId      employee ID for which details to be updated
      *
@@ -72,8 +69,7 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to update name
-     * of an employee
+     * requests service to update name of an employee
      *
      * @param employeeId    employee ID for which details to be updated
      * @param name          updated value of the employee's name
@@ -85,8 +81,7 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to update
-     * Date Of Birth of an employee
+     * requests service to update Date Of Birth of an employee
      *
      * @param employeeId    employee ID for which details to be updated
      * @param dob           updated value of the employee's date of birth
@@ -98,8 +93,7 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to update
-     * salary of an employee
+     * requests service to update salary of an employee
      *
      * @param employeeId    employee ID for which details to be updated
      * @param salary        updated value of the employee's salary
@@ -111,8 +105,7 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to update
-     * mobile number of an employee
+     * requests service to update mobile number of an employee
      *
      * @param employeeId      employee ID for which details to be updated
      * @param mobileNumber    updated value of the employee's mobile number
@@ -185,7 +178,7 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to restore deleted employee details
+     * requests service to restore deleted employee's details
      * 
      * @param employeeId    which need to be restored
      * 
@@ -196,7 +189,7 @@ public class EmployeeController {
     }
 
     /**
-     * used to check whether the details of an employee present or not
+     * checks whether the details of an employee present or not
      *
      * @param employeeId    employeeId to verify the exixtence
      *

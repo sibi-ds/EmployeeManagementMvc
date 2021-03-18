@@ -84,10 +84,10 @@ public class Employee {
     }
 
     public String toString() {
-        return "\nEMPLOYEE ID   : " + id
-               + "\nNAME          : " + name
-               + "\nDOB           : " + dateOfBirth
-               + "\nSALARY        : " + salary
-               + "\nMOBILE NUMBER : " + mobileNumber + "\n" ;
+        return "\nEmployee ID   : " + id
+               + "\nName          : " + name
+               + "\nDob           : " + dateOfBirth
+               + "\nSalary        : " + salary
+               + "\nMobile Number : " + mobileNumber + "\n" ;
     }
 }
