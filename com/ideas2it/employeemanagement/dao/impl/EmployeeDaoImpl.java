@@ -49,9 +49,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
     private final String getAddressesQuery = "SELECT address_id, address_type, door_number, street"
             + ", village, district, state, pincode FROM address WHERE employee_id = ? AND is_deleted = false";
 
-    private final String getDeletedAddressesQuery
-            = "SELECT address_id FROM address WHERE employee_id = ? AND is_deleted = true";
-
     private final String updateEmployeeQuery = "UPDATE employee SET name = IFNULL(?, name)"
             + ", date_of_birth = IFNULL(?, date_of_birth), salary = IFNULL(?, salary)"
             + ", mobile_number = IFNULL(?, mobile_number) WHERE id = ?";
@@ -63,18 +60,14 @@ public class EmployeeDaoImpl implements EmployeeDao {
     private final String deleteAddressQuery = "UPDATE address SET is_deleted = true"
             + " WHERE employee_id = ? AND address_id = ?";
 
-    private final String deleteEmployeeQuery = "UPDATE employee, address SET employee.is_deleted = true"
-            + ", address.is_deleted = true WHERE employee.id = ? AND employee.id = address.employee_id";
-
-    private final String deleteEmployeeOnlyQuery = "UPDATE employee SET is_deleted = true WHERE id = ?";
+    private final String deleteEmployeeQuery = "UPDATE employee as e LEFT JOIN address as a "
+            + "ON e.id = a.employee_id SET e.is_deleted = true, a.is_deleted = true WHERE e.id = ?";
 
     private final String getDeletedEmployeesQuery = "SELECT id, name, date_of_birth, salary"
             + ", mobile_number FROM employee WHERE is_deleted = true";
 
-    private final String restoreEmployeeQuery = "UPDATE employee, address SET employee.is_deleted = false"
-            + ", address.is_deleted = false WHERE employee.id = ? AND employee.id = address.employee_id";
-
-    private final String restoreEmployeeOnlyQuery = "UPDATE employee SET is_deleted = false WHERE id = ?";
+    private final String restoreEmployeeQuery = "UPDATE employee as e LEFT JOIN address as a "
+            + "ON e.id = a.employee_id SET e.is_deleted = false, a.is_deleted = false WHERE e.id = ?";
 
     private final String isEmployeePresentQuery = "SELECT id FROM employee WHERE id = ? AND is_deleted = false";
 
@@ -100,7 +93,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
             int employeeId = resultSet.getInt(1);
-
             preparedStatement.close();
 
             if ((1 == insertionCount) && insertAddresses(employeeId, employee.getAddresses(), connection)) {
@@ -280,6 +272,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             Date dob = resultSet.getDate("date_of_birth");
             float salary = resultSet.getFloat("salary");
             String mobileNumber = resultSet.getString("mobile_number");
+
             do {
                 if (0 != resultSet.getInt("address_id")) {
                 addresses.add(new Address(resultSet.getInt("address_id"), resultSet.getString("address_type")
@@ -288,6 +281,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
                         , resultSet.getString("state"), resultSet.getString("pincode")));
                 }
             } while (resultSet.next());
+
             employee = new Employee(employeeId, name, dob, salary, mobileNumber, addresses);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -308,7 +302,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(getAddressesQuery);
             preparedStatement.setInt(1,employeeId);
-
             ResultSet addressesAvailable = preparedStatement.executeQuery();
 
             while (addressesAvailable.next()) {
@@ -328,6 +321,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
                 e.printStackTrace();
             }
         }
+
         return addresses;
     }
 
@@ -359,7 +353,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
             preparedStatement.setInt(5, employeeId);
 
             updated = preparedStatement.executeUpdate();
-
             preparedStatement.close();
             connection.commit();
         } catch (SQLException e) {
@@ -387,7 +380,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
     public boolean addAddress(int employeeId, Address address) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-        int addressInserted = 0;
+        int addressesInserted = 0;
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insertAddressQuery);
@@ -401,8 +394,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             preparedStatement.setString(7, address.getState());
             preparedStatement.setString(8, address.getPincode());
 
-            addressInserted = preparedStatement.executeUpdate();
-
+            addressesInserted = preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.commit();
         } catch (SQLException e) {
@@ -420,7 +412,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             }
         }
 
-        return (1 == addressInserted);
+        return (1 == addressesInserted);
     }
 
     /**
@@ -446,7 +438,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
             preparedStatement.setInt(9, employeeId);
 
             updated = preparedStatement.executeUpdate();
-
             preparedStatement.close();
             connection.commit();
         } catch (SQLException e) {
@@ -483,7 +474,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
             preparedStatement.setInt(2, addressId);
 
             deleted = preparedStatement.executeUpdate();
-
             preparedStatement.close();
             connection.commit();
         } catch (SQLException e) {
@@ -509,81 +499,18 @@ public class EmployeeDaoImpl implements EmployeeDao {
      */
     @Override
     public boolean deleteEmployee(int employeeId) {
-        int employeeDeleted = 0;
-
-        if (getAddresses(employeeId).isEmpty()) {
-            employeeDeleted = deleteEmployeeOnly(employeeId);
-        } else {
-            employeeDeleted = deleteEmployeeAndAddress(employeeId);
-        }
-
-        return (0 != employeeDeleted);
-    }
-
-    /**
-     * deletes employee which doesn't have address
-     *
-     * @param employeeId    for which details to be removed
-     *
-     * @return    deleted count
-     */
-    private int deleteEmployeeOnly(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-        int employeeDeleted = 0;
-
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeOnlyQuery);
-            preparedStatement.setInt(1,employeeId);
-            employeeDeleted = preparedStatement.executeUpdate();
-            preparedStatement.close();
-
-            if (1 == employeeDeleted) {
-                connection.commit();
-            } else {
-                connection.rollback();
-            }
-         } catch (SQLException e) {
-             try {
-                 connection.rollback();
-             } catch (SQLException ex) {
-                 ex.printStackTrace();
-             }
-             e.printStackTrace();
-         } finally {
-             try {
-                 connection.close();
-             } catch (SQLException e) {
-                 e.printStackTrace();
-             }
-         }
-
-        return employeeDeleted;
-    }
-
-    /**
-     * deletes employee's details
-     *
-     * @param employeeId    for which details to be removed
-     *
-     * @return    deleted count
-     */
-    private int deleteEmployeeAndAddress(int employeeId) {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-        int employeeDeleted = 0;
+        int deleted = 0;
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeQuery);
-            preparedStatement.setInt(1,employeeId);
-            employeeDeleted = preparedStatement.executeUpdate();
-            preparedStatement.close();
 
-            if (0 != employeeDeleted) {
-                connection.commit();
-            } else { 
-                connection.rollback();
-            }
+            preparedStatement.setInt(1, employeeId);
+
+            deleted = preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -599,7 +526,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             }
         }
 
-        return employeeDeleted;
+        return (0 != deleted);
     }
 
     /**
@@ -650,93 +577,13 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int restored = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getDeletedAddressesQuery);
-            preparedStatement.setInt(1,employeeId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (!resultSet.next()) {
-                restored = restoreEmployeeOnly(employeeId);
-            } else {
-                restored = restoreEmployeeAndAddress(employeeId);
-            }
-            preparedStatement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return (0 != restored);
-    }
-
-    /**
-     * restores employee which doesn't have address
-     *
-     * @param employeeId    for which details to be restored
-     *
-     * @return    restored count
-     */
-    private int restoreEmployeeOnly(int employeeId) {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-        int employeeRestored = 0;
-
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(restoreEmployeeOnlyQuery);
-            preparedStatement.setInt(1,employeeId);
-            employeeRestored = preparedStatement.executeUpdate();
-            preparedStatement.close();
-
-            if (0 != employeeRestored) {
-                connection.commit();
-            } else {
-                connection.rollback();
-            }
-         } catch (SQLException e) {
-             try {
-                 connection.rollback();
-             } catch (SQLException ex) {
-                 ex.printStackTrace();
-             }
-             e.printStackTrace();
-         } finally {
-             try {
-                 connection.close();
-             } catch (SQLException e) {
-                 e.printStackTrace();
-             }
-         }
-
-        return employeeRestored;
-    }
-
-    /**
-     * restores employee's details
-     *
-     * @param employeeId    for which details to be restored
-     *
-     * @return    restored count
-     */
-    private int restoreEmployeeAndAddress(int employeeId) {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-        int employeeRestored = 0;
-
-        try {
             PreparedStatement preparedStatement = connection.prepareStatement(restoreEmployeeQuery);
-            preparedStatement.setInt(1,employeeId);
-            employeeRestored = preparedStatement.executeUpdate();
-            preparedStatement.close();
 
-            if (0 != employeeRestored) {
-                connection.commit();
-            } else { 
-                connection.rollback();
-            }
+            preparedStatement.setInt(1, employeeId);
+
+            restored = preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -752,7 +599,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             }
         }
 
-        return employeeRestored;
+        return (0 != restored);
     }
 
     /**
@@ -769,7 +616,6 @@ public class EmployeeDaoImpl implements EmployeeDao {
             preparedStatement.setInt(1, employeeId);
 
             isPresent = preparedStatement.executeQuery().next();
-
             preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();

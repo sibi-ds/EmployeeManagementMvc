@@ -1,10 +1,15 @@
 package com.ideas2it.employeemanagement.service;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * interface class of the employee service
+ *
+ * @author  sibi
+ * @created 2021-03-03
+ */
 public interface EmployeeService {
 
     /**

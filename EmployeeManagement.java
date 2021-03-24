@@ -1,7 +1,5 @@
 import com.ideas2it.employeemanagement.view.EmployeeView;
 
-import java.sql.SQLException;
-
 /**
  * this class invokes the user interface class
  * to interact with the user

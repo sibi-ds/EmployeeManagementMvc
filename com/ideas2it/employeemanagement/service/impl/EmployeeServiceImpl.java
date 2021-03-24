@@ -1,7 +1,6 @@
 package com.ideas2it.employeemanagement.service.impl;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.ideas2it.employeemanagement.view;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -95,6 +94,7 @@ public class EmployeeView {
         String addressInsertionStatement = "1 - Insert address , 2 - Exit from address insertion menu";
         String addressTypeStatement  = "1 - Permanant Address , 2 - Temporary Address";
         byte addressInsertionOption = 0;
+        boolean isPermanentAddressInserted = false;
 
         while (2 != addressInsertionOption) {
             System.out.println(addressInsertionStatement);
@@ -105,7 +105,6 @@ public class EmployeeView {
                 System.out.println("Enter address type from the following");
                 System.out.println(addressTypeStatement);
                 byte addressTypeOption = scanner.nextByte();
-                boolean isPermanentAddressInserted = false;
 
                 switch (addressTypeOption) {
                     case 1:
