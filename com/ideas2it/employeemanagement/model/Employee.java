@@ -35,6 +35,22 @@ public class Employee {
         this.addresses = addresses;
     }
 
+    public Employee(String name, Date dateOfBirth, float salary
+            , String mobileNumber, List<Address> addresses) {
+        this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.salary = salary;
+        this.mobileNumber = mobileNumber;
+        this.addresses = addresses;
+    }
+
+    public Employee(String name, Date dateOfBirth, float salary, String mobileNumber) {
+        this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.salary = salary;
+        this.mobileNumber = mobileNumber;
+    }
+
     public void setId(int id) {
         this.id = id;
     }

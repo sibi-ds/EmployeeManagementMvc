@@ -34,6 +34,17 @@ public class Address {
         this.pincode = pincode;
     }
 
+    public Address(String addressType, String doorNumber, String street
+            ,String village, String district, String state, String pincode) {
+        this.addressType = addressType;
+        this.doorNumber = doorNumber;
+        this.street = street;
+        this.village = village;
+        this.district = district;
+        this.state = state;
+        this.pincode = pincode;
+    }
+
     public void setAddressId(int addressId) {
         this.addressId = addressId;
     }
@@ -99,8 +110,7 @@ public class Address {
     }
 
     public String toString() {
-        return "\nAddress Id    : " + addressId
-               + "\nAddress Type  : " + addressType
+        return "\nAddress Type  : " + addressType
                + "\nDoor Number   : " + doorNumber
                + "\nStreet        : " + street
                + "\nvillage       : " + village

@@ -11,7 +11,7 @@ import java.sql.SQLException;
  */
 public class EmployeeManagement {
 
-    public static void main(String args[]) throws ClassNotFoundException, SQLException {
+    public static void main(String args[]) {
         EmployeeView employeeView = new EmployeeView();
         employeeView.view();
     }

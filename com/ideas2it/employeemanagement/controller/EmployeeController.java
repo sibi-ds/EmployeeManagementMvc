@@ -33,7 +33,7 @@ public class EmployeeController {
      * @return    true if employee details stored successfully else false
      */
     public boolean insertEmployee(String name, Date dob, float salary, String mobileNumber
-            , List<List<String>> addresses) throws ClassNotFoundException, SQLException {
+            , List<List<String>> addresses) {
         return employeeServiceImpl.insertEmployee(name, dob, salary, mobileNumber, addresses);
     }
 
@@ -42,7 +42,7 @@ public class EmployeeController {
      *
      * @return    list consisting employee details
      */
-    public List<String> getEmployees() throws ClassNotFoundException, SQLException {
+    public List<String> getEmployees() {
         return employeeServiceImpl.getEmployees();
     }
 
@@ -53,7 +53,7 @@ public class EmployeeController {
      *
      * @return    string containing employee details
      */
-    public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException {
+    public String getEmployee(int employeeId) {
         return employeeServiceImpl.getEmployee(employeeId);
     }
 
@@ -64,7 +64,7 @@ public class EmployeeController {
      *
      * @return    map containing address ID and address details
      */
-    public Map<Integer, String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
+    public Map<Integer, String> getAddresses(int employeeId) {
         return employeeServiceImpl.getAddresses(employeeId);
     }
 
@@ -72,49 +72,12 @@ public class EmployeeController {
      * requests service to update name of an employee
      *
      * @param employeeId    employee ID for which details to be updated
-     * @param name          updated value of the employee's name
+     * @param employeeBasicDetails    updated basic details of an employee
      *
      * @return    true if updation successful else false
      */
-    public boolean updateName(int employeeId, String name) throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.updateName(employeeId, name);
-    }
-
-    /**
-     * requests service to update Date Of Birth of an employee
-     *
-     * @param employeeId    employee ID for which details to be updated
-     * @param dob           updated value of the employee's date of birth
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateDob(int employeeId, Date dob) throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.updateDob(employeeId, dob);
-    }
-
-    /**
-     * requests service to update salary of an employee
-     *
-     * @param employeeId    employee ID for which details to be updated
-     * @param salary        updated value of the employee's salary
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateSalary(int employeeId, float salary) throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.updateSalary(employeeId, salary);
-    }
-
-    /**
-     * requests service to update mobile number of an employee
-     *
-     * @param employeeId      employee ID for which details to be updated
-     * @param mobileNumber    updated value of the employee's mobile number
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateMobileNumber(int employeeId, String mobileNumber)
-            throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.updateMobileNumber(employeeId, mobileNumber);
+    public boolean updateEmployee(int employeeId, List<String> employeeBasicDetails) {
+        return employeeServiceImpl.updateEmployee(employeeId, employeeBasicDetails);
     }
 
     /**
@@ -125,8 +88,7 @@ public class EmployeeController {
      *
      * @return    true if address insertion successful else false
      */
-    public boolean addAddress(int employeeId, List<String> address)
-            throws ClassNotFoundException, SQLException {
+    public boolean addAddress(int employeeId, List<String> address) {
         return employeeServiceImpl.addAddress(employeeId, address);
     }
         
@@ -140,8 +102,7 @@ public class EmployeeController {
      *
      * @return    true if address updation successful else false
      */
-    public boolean updateAddressValues(int employeeId, int addressId, List<String> address)
-            throws ClassNotFoundException, SQLException {
+    public boolean updateAddressValues(int employeeId, int addressId, List<String> address) {
         return employeeServiceImpl.updateAddressValues(employeeId, addressId, address);
     }
 
@@ -153,7 +114,7 @@ public class EmployeeController {
      *
      * @return    true if address deletion successful else false
      */
-    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException {
+    public boolean deleteAddress(int employeeId, int addressId) {
         return employeeServiceImpl.deleteAddress(employeeId, addressId);
     }
 
@@ -164,7 +125,7 @@ public class EmployeeController {
      *
      * @return    true if deletion successful else false
      */
-    public boolean deleteEmployee(int employeeId) throws ClassNotFoundException, SQLException {
+    public boolean deleteEmployee(int employeeId) {
         return employeeServiceImpl.deleteEmployee(employeeId);
     }
 
@@ -173,8 +134,8 @@ public class EmployeeController {
      * 
      * @return    list of deleted employee IDs
      */
-    public List<String> getDeleted() throws ClassNotFoundException, SQLException {
-        return employeeServiceImpl.getDeleted();
+    public List<String> getDeletedEmployees() {
+        return employeeServiceImpl.getDeletedEmployees();
     }
 
     /**
@@ -184,7 +145,7 @@ public class EmployeeController {
      * 
      * @return    true if restoration successful else false
      */
-    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException {
+    public boolean restoreDeleted(int employeeId) {
         return employeeServiceImpl.restoreDeleted(employeeId);
     }
 
@@ -195,8 +156,7 @@ public class EmployeeController {
      *
      * @return    returns true if employee present else return false
      */
-    public boolean isEmployeePresent(int employeeId)
-            throws ClassNotFoundException, SQLException {
+    public boolean isEmployeePresent(int employeeId) {
         return employeeServiceImpl.isEmployeePresent(employeeId);
     }
 }

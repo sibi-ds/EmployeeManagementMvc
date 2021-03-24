@@ -15,7 +15,7 @@ import java.util.Map;
 import com.ideas2it.employeemanagement.dao.EmployeeDao;
 import com.ideas2it.employeemanagement.model.Address;
 import com.ideas2it.employeemanagement.model.Employee;
-import com.ideas2it.sessionfactoy.DatabaseConnection;
+import com.ideas2it.employeemanagement.sessionfactoy.DatabaseConnection;
 
 /**
  * this class implements
@@ -27,186 +27,271 @@ import com.ideas2it.sessionfactoy.DatabaseConnection;
  */
 public class EmployeeDaoImpl implements EmployeeDao {
 
+    private final String insertEmployeeQuery
+            = "INSERT INTO employee (name, date_of_birth, salary, mobile_number) VALUES (?, ?, ?, ?)";
+
+    private final String insertAddressQuery = "INSERT INTO address"
+            + " (address_type, employee_id, door_number, street, village, district, state, pincode)"
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private final String getEmployeeQuery = "SELECT employee.id, employee.name, employee.date_of_birth"
+            + ", employee.salary, employee.mobile_number, address.address_id, address.address_type"
+            + ", address.door_number, address.street, address.village, address.district, address.state"
+            + ", address.pincode FROM employee LEFT JOIN address ON employee.id = address.employee_id"
+            + " AND address.is_deleted = false WHERE employee.id = ? AND employee.is_deleted = false";
+
+    private final String getEmployeesQuery = "SELECT employee.id, employee.name, employee.date_of_birth"
+            + ", employee.salary, employee.mobile_number, address.address_id, address.address_type"
+            + ", address.door_number, address.street, address.village, address.district, address.state"
+            + ", address.pincode FROM employee LEFT JOIN address ON employee.id = address.employee_id"
+            + " AND address.is_deleted = false WHERE employee.is_deleted = false";
+
+    private final String getAddressesQuery = "SELECT address_id, address_type, door_number, street"
+            + ", village, district, state, pincode FROM address WHERE employee_id = ? AND is_deleted = false";
+
+    private final String getDeletedAddressesQuery
+            = "SELECT address_id FROM address WHERE employee_id = ? AND is_deleted = true";
+
+    private final String updateEmployeeQuery = "UPDATE employee SET name = IFNULL(?, name)"
+            + ", date_of_birth = IFNULL(?, date_of_birth), salary = IFNULL(?, salary)"
+            + ", mobile_number = IFNULL(?, mobile_number) WHERE id = ?";
+
+    private final String updateAddressValuesQuery = "UPDATE address SET address_type = ?"
+            + ", door_number = ?, street = ?, village = ?, district = ?, state = ?"
+            + ", pincode = ? WHERE address_id = ? AND employee_id = ?";
+
+    private final String deleteAddressQuery = "UPDATE address SET is_deleted = true"
+            + " WHERE employee_id = ? AND address_id = ?";
+
+    private final String deleteEmployeeQuery = "UPDATE employee, address SET employee.is_deleted = true"
+            + ", address.is_deleted = true WHERE employee.id = ? AND employee.id = address.employee_id";
+
+    private final String deleteEmployeeOnlyQuery = "UPDATE employee SET is_deleted = true WHERE id = ?";
+
+    private final String getDeletedEmployeesQuery = "SELECT id, name, date_of_birth, salary"
+            + ", mobile_number FROM employee WHERE is_deleted = true";
+
+    private final String restoreEmployeeQuery = "UPDATE employee, address SET employee.is_deleted = false"
+            + ", address.is_deleted = false WHERE employee.id = ? AND employee.id = address.employee_id";
+
+    private final String restoreEmployeeOnlyQuery = "UPDATE employee SET is_deleted = false WHERE id = ?";
+
+    private final String isEmployeePresentQuery = "SELECT id FROM employee WHERE id = ? AND is_deleted = false";
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean insertEmployee(Employee employee) throws SQLException, ClassNotFoundException {
+    public boolean insertEmployee(Employee employee) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        boolean isEmployeeInserted = false;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("INSERT INTO employee"
-                + "(name, date_of_birth, salary, mobile_number) VALUES (?, ?, ?, ?)");
+        try {
+            PreparedStatement preparedStatement = connection
+                    .prepareStatement(insertEmployeeQuery, PreparedStatement.RETURN_GENERATED_KEYS);
 
-        preparedStatement.setString(1,employee.getName());
-        preparedStatement.setDate(2,employee.getDateOfBirth());
-        preparedStatement.setFloat(3,employee.getSalary());
-        preparedStatement.setString(4,employee.getMobileNumber());
+            preparedStatement.setString(1, employee.getName());
+            preparedStatement.setDate(2, employee.getDateOfBirth());
+            preparedStatement.setFloat(3, employee.getSalary());
+            preparedStatement.setString(4, employee.getMobileNumber());
 
-        int employeeInserted = preparedStatement.executeUpdate();
+            int insertionCount = preparedStatement.executeUpdate();
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            resultSet.next();
+            int employeeId = resultSet.getInt(1);
 
-        preparedStatement.close();
-        connection.close();
+            preparedStatement.close();
 
-        boolean areAddressesInserted = true;
-
-        if (1 == employeeInserted) {
-            for (Address address : employee.getAddresses()) {
-                areAddressesInserted = areAddressesInserted && insertAddress(address);
+            if ((1 == insertionCount) && insertAddresses(employeeId, employee.getAddresses(), connection)) {
+                connection.commit();
+                isEmployeeInserted = true;
+            } else {
+                connection.rollback();
             }
-        } else {
-            return false;
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        return areAddressesInserted;
+        return isEmployeeInserted;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean insertAddress(Address address) throws SQLException, ClassNotFoundException {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
+    public boolean insertAddresses(int employeeId, List<Address> addresses, Connection connectionObject) {
+        Connection connection = connectionObject;
+        int insertedCount = 0;
 
-        Statement statement = connection.createStatement();
-        ResultSet employeeIds = statement.executeQuery("select max(id) from employee");
-        employeeIds.next();
-        int employeeId = employeeIds.getInt(1);
-        statement.close();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(insertAddressQuery);
 
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO address"
-                + "(address_type, employee_id, door_number, street, village, district, state, pincode)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            for (Address address : addresses) {
+                preparedStatement.setString(1, address.getAddressType());
+                preparedStatement.setInt(2, employeeId);
+                preparedStatement.setString(3, address.getDoorNumber());
+                preparedStatement.setString(4, address.getStreet());
+                preparedStatement.setString(5, address.getVillage());
+                preparedStatement.setString(6, address.getDistrict());
+                preparedStatement.setString(7, address.getState());
+                preparedStatement.setString(8, address.getPincode());
+                preparedStatement.addBatch();
+            }
 
-        preparedStatement.setString(1,address.getAddressType());
-        preparedStatement.setInt(2,employeeId);
-        preparedStatement.setString(3,address.getDoorNumber());
-        preparedStatement.setString(4,address.getStreet());
-        preparedStatement.setString(5,address.getVillage());
-        preparedStatement.setString(6,address.getDistrict());
-        preparedStatement.setString(7,address.getState());
-        preparedStatement.setString(8,address.getPincode());
-
-        int addressInserted = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        connection.close();
-
-        return (1 == addressInserted);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Employee> getEmployees() throws SQLException, ClassNotFoundException {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT employee.id, employee.name, employee.date_of_birth, employee.salary, employee.mobile_number,"
-                + " address.address_id, address.address_type, address.door_number, address.street, address.village,"
-                + " address.district, address.state, address.pincode FROM employee LEFT JOIN address ON"
-                + " employee.id = address.employee_id AND address.is_deleted = false WHERE employee.is_deleted = false");
-
-        List<Employee> employeesDetails = new ArrayList<Employee>();
-
-        ResultSet employees = preparedStatement.executeQuery();
-
-        boolean isRowAvailable = true;
-
-        if (employees.next()) {
-            while (isRowAvailable) {
-                List<Address> addressesAvailable = new ArrayList<Address>();
-
-                int employeeId = employees.getInt("id");
-                String name = employees.getString("name");
-                Date dob = employees.getDate("date_of_birth");
-                float salary = employees.getFloat("salary");
-                String mobileNumber = employees.getString("mobile_number");
-
-                int addressId = 1;
-
-                while (employees.getInt("id") == employeeId) {
-                    if (0 != employees.getInt("address_id")) {
-                        addressesAvailable.add(new Address(addressId, employees.getString("address_type")
-                                , employees.getString("door_number"), employees.getString("street")
-                                , employees.getString("village"), employees.getString("district")
-                                , employees.getString("state"), employees.getString("pincode")));
-
-                        addressId++;
-                    }
-
-                    if (!employees.next()) {
-                        isRowAvailable = false;
-                        break;
-                    }
-                }
-                employeesDetails.add(new Employee(employeeId, name, dob, salary, mobileNumber, addressesAvailable));
-            }        
+            insertedCount = preparedStatement.executeBatch().length;
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        preparedStatement.close();
-        connection.close();
-
-        return employeesDetails;
+        return (insertedCount == addresses.size());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Employee getEmployee(int employeeId) throws SQLException, ClassNotFoundException {
+    public List<Employee> getEmployees() {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        List<Employee> employees = null;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT employee.name, employee.date_of_birth, employee.salary, employee.mobile_number,"
-                + " address.address_id, address.address_type, address.door_number, address.street, address.village,"
-                + " address.district, address.state, address.pincode FROM employee LEFT JOIN address ON"
-                + " employee.id = address.employee_id AND address.is_deleted = false WHERE employee.id = ? AND employee.is_deleted = false");
-        
-        preparedStatement.setInt(1,employeeId);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(getEmployeesQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            employees = getEmployeesDetails(resultSet);
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
-        ResultSet employeeDetails = preparedStatement.executeQuery();
+        return employees;
+    }
 
+    /**
+     * result set is converted into list of employees
+     * 
+     * @param resultSet    details of all employees which are stored in the database
+     * 
+     * @return    list of employees details
+     */
+    public List<Employee> getEmployeesDetails(ResultSet resultSet) {
+        List<Employee> employees = new ArrayList<Employee>();
+
+        try {
+            if (resultSet.next()) {
+                boolean isRowAvailable = true;
+
+                while (isRowAvailable) {
+                    List<Address> addresses = new ArrayList<Address>();
+                    int employeeId = resultSet.getInt("id");
+                    String name = resultSet.getString("name");
+                    Date dob = resultSet.getDate("date_of_birth");
+                    float salary = resultSet.getFloat("salary");
+                    String mobileNumber = resultSet.getString("mobile_number");
+
+                    while (resultSet.getInt("id") == employeeId) {
+                        if (0 != resultSet.getInt("address_id")) {
+                            addresses.add(new Address(resultSet.getInt("address_id"), resultSet.getString("address_type")
+                                    , resultSet.getString("door_number"), resultSet.getString("street")
+                                    , resultSet.getString("village"), resultSet.getString("district")
+                                    , resultSet.getString("state"), resultSet.getString("pincode")));
+                        }
+
+                        if (!resultSet.next()) {
+                            isRowAvailable = false;
+                            break;
+                        }
+                    }
+                    employees.add(new Employee(employeeId, name, dob, salary, mobileNumber, addresses));
+                }        
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return employees;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Employee getEmployee(int employeeId) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
         Employee employee = null;
 
-        if (employeeDetails.next()) {
-            List<Address> addressesAvailable = new ArrayList<Address>();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(getEmployeeQuery);
+            preparedStatement.setInt(1,employeeId);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-            String name = employeeDetails.getString("name");
-            Date dob = employeeDetails.getDate("date_of_birth");
-            float salary = employeeDetails.getFloat("salary");
-            String mobileNumber = employeeDetails.getString("mobile_number");
-
-            int addressId = 1;
-
-            if (0 != employeeDetails.getInt("address_id")) {
-                addressesAvailable.add(new Address(addressId, employeeDetails.getString("address_type")
-                        , employeeDetails.getString("door_number"), employeeDetails.getString("street")
-                        , employeeDetails.getString("village"), employeeDetails.getString("district")
-                        , employeeDetails.getString("state"), employeeDetails.getString("pincode")));
-                addressId++;
+            if (resultSet.next()) {
+                employee = getEmployeeDetails(resultSet);
             }
 
-            while (employeeDetails.next()) {
-                if (0 != employeeDetails.getInt("address_id")) {
-                    addressesAvailable.add(new Address(addressId, employeeDetails.getString("address_type")
-                            , employeeDetails.getString("door_number"), employeeDetails.getString("street")
-                            , employeeDetails.getString("village"), employeeDetails.getString("district")
-                            , employeeDetails.getString("state"), employeeDetails.getString("pincode")));
-                    addressId++;
-                }
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-
-            employee = new Employee(employeeId, name, dob, salary, mobileNumber, addressesAvailable);
         }
 
-        preparedStatement.close();
-        connection.close();
+        return employee;
+    }
+
+    /**
+     * result set is converted into employee's details
+     * 
+     * @param resultSet    details of an employee which are stored in the database
+     * 
+     * @return    employee's details
+     */
+    public Employee getEmployeeDetails(ResultSet resultSet) {
+        List<Address> addresses = new ArrayList<Address>();
+        Employee employee = null;
+
+        try {
+            int employeeId = resultSet.getInt("id");
+            String name = resultSet.getString("name");
+            Date dob = resultSet.getDate("date_of_birth");
+            float salary = resultSet.getFloat("salary");
+            String mobileNumber = resultSet.getString("mobile_number");
+            do {
+                if (0 != resultSet.getInt("address_id")) {
+                addresses.add(new Address(resultSet.getInt("address_id"), resultSet.getString("address_type")
+                        , resultSet.getString("door_number"), resultSet.getString("street")
+                        , resultSet.getString("village"), resultSet.getString("district")
+                        , resultSet.getString("state"), resultSet.getString("pincode")));
+                }
+            } while (resultSet.next());
+            employee = new Employee(employeeId, name, dob, salary, mobileNumber, addresses);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         return employee;
     }
@@ -215,32 +300,34 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public Map<Integer, Address> getAddresses(int employeeId) throws ClassNotFoundException, SQLException {
+    public Map<Integer, Address> getAddresses(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT address_id, address_type, door_number, street, village, district, state, pincode "
-                + "FROM address WHERE employee_id = ? AND is_deleted = false");
-        preparedStatement.setInt(1,employeeId);
-
-        ResultSet addressesAvailable = preparedStatement.executeQuery();
-
         Map<Integer, Address> addresses = new LinkedHashMap<Integer, Address>();
 
-        int addressId = 1;
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(getAddressesQuery);
+            preparedStatement.setInt(1,employeeId);
 
-        while (addressesAvailable.next()) {
-            addresses.put(addressesAvailable.getInt("address_id"), new Address(addressId, addressesAvailable.getString("address_type")
-                    , addressesAvailable.getString("door_number"), addressesAvailable.getString("street")
-                    , addressesAvailable.getString("village"), addressesAvailable.getString("district")
-                    , addressesAvailable.getString("state"), addressesAvailable.getString("pincode")));
-            addressId++;
+            ResultSet addressesAvailable = preparedStatement.executeQuery();
+
+            while (addressesAvailable.next()) {
+                addresses.put(addressesAvailable.getInt("address_id"), new Address(addressesAvailable.getString("address_type")
+                        , addressesAvailable.getString("door_number"), addressesAvailable.getString("street")
+                        , addressesAvailable.getString("village"), addressesAvailable.getString("district")
+                        , addressesAvailable.getString("state"), addressesAvailable.getString("pincode")));
+            }
+
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        preparedStatement.close();
-        connection.close();
-
         return addresses;
     }
 
@@ -248,20 +335,47 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateName(int employeeId, String name) throws SQLException, ClassNotFoundException {
+    public boolean updateEmployee(int employeeId, Employee employee) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee SET name = ? WHERE id = ?");
+        String name = employee.getName();
+        Date dob = employee.getDateOfBirth();
+        float salary = employee.getSalary();
+        Float salaryValue = null;
+        if (0.0f != salary) {
+            salaryValue = new Float(salary);
+        }
+        String mobileNumber = employee.getMobileNumber();
+        int updated = 0;
 
-        preparedStatement.setString(1,name);
-        preparedStatement.setInt(2,employeeId);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(updateEmployeeQuery);
 
-        int updated = preparedStatement.executeUpdate();
+            preparedStatement.setString(1, name);
+            preparedStatement.setDate(2, dob);
+            preparedStatement.setObject(3, salaryValue);
+            preparedStatement.setString(4, mobileNumber);
+            preparedStatement.setInt(5, employeeId);
 
-        preparedStatement.close();
-        connection.close();
+            updated = preparedStatement.executeUpdate();
+
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return (1 == updated);
     }
@@ -270,93 +384,41 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateDob(int employeeId, Date dob) throws SQLException, ClassNotFoundException {
+    public boolean addAddress(int employeeId, Address address) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        int addressInserted = 0;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee SET date_of_birth = ? WHERE id = ?");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(insertAddressQuery);
 
-        preparedStatement.setDate(1,dob);
-        preparedStatement.setInt(2,employeeId);
+            preparedStatement.setString(1, address.getAddressType());
+            preparedStatement.setInt(2, employeeId);
+            preparedStatement.setString(3, address.getDoorNumber());
+            preparedStatement.setString(4, address.getStreet());
+            preparedStatement.setString(5, address.getVillage());
+            preparedStatement.setString(6, address.getDistrict());
+            preparedStatement.setString(7, address.getState());
+            preparedStatement.setString(8, address.getPincode());
 
-        int inserted = preparedStatement.executeUpdate();
+            addressInserted = preparedStatement.executeUpdate();
 
-        preparedStatement.close();
-        connection.close();
-
-        return (1 == inserted);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean updateSalary(int employeeId, float salary) throws SQLException, ClassNotFoundException {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee SET salary = ? WHERE id = ?");
-
-        preparedStatement.setFloat(1,salary);
-        preparedStatement.setInt(2,employeeId);
-
-        int inserted = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        connection.close();
-
-        return (1 == inserted);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean updateMobileNumber(int employeeId, String mobileNumber) throws SQLException, ClassNotFoundException {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee SET mobile_number = ? WHERE id = ?");
-
-        preparedStatement.setString(1,mobileNumber);
-        preparedStatement.setInt(2,employeeId);
-
-        int inserted = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        connection.close();
-
-        return (1 == inserted);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean addAddress(int employeeId, Address address) throws SQLException, ClassNotFoundException {
-        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
-        Connection connection = databaseConnection.getConnection();
-
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO address"
-                + "(address_type, employee_id, door_number, street, village, district, state, pincode)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-
-        preparedStatement.setString(1,address.getAddressType());
-        preparedStatement.setInt(2,employeeId);
-        preparedStatement.setString(3,address.getDoorNumber());
-        preparedStatement.setString(4,address.getStreet());
-        preparedStatement.setString(5,address.getVillage());
-        preparedStatement.setString(6,address.getDistrict());
-        preparedStatement.setString(7,address.getState());
-        preparedStatement.setString(8,address.getPincode());
-
-        int addressInserted = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        connection.close();
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return (1 == addressInserted);
     }
@@ -365,36 +427,42 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateAddressValues(int employeeId, int addressId, Address address)
-            throws ClassNotFoundException, SQLException {
+    public boolean updateAddressValues(int employeeId, int addressId, Address address) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        int updated = 0;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT address_id from address WHERE employee_id = ? AND is_deleted = false");
-        preparedStatement.setInt(1,employeeId);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(updateAddressValuesQuery);
 
-        ResultSet addressIds = preparedStatement.executeQuery();
+            preparedStatement.setString(1, address.getAddressType());
+            preparedStatement.setString(2, address.getDoorNumber());
+            preparedStatement.setString(3, address.getStreet());
+            preparedStatement.setString(4, address.getVillage());
+            preparedStatement.setString(5, address.getDistrict());
+            preparedStatement.setString(6, address.getState());
+            preparedStatement.setString(7, address.getPincode());
+            preparedStatement.setInt(8, addressId);
+            preparedStatement.setInt(9, employeeId);
 
-        preparedStatement = connection.prepareStatement("UPDATE address"
-                + " SET address_type = ?, door_number = ?, street = ?"
-                + ", village = ?, district = ?, state = ?, pincode = ?"
-                + " WHERE address_id = ? AND employee_id = ?");
+            updated = preparedStatement.executeUpdate();
 
-        preparedStatement.setString(1,address.getAddressType());
-        preparedStatement.setString(2,address.getDoorNumber());
-        preparedStatement.setString(3,address.getStreet());
-        preparedStatement.setString(4,address.getVillage());
-        preparedStatement.setString(5,address.getDistrict());
-        preparedStatement.setString(6,address.getState());
-        preparedStatement.setString(7,address.getPincode());
-        preparedStatement.setInt(8,addressId);
-        preparedStatement.setInt(9,employeeId);
-
-        int updated = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        connection.close();
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return (0 != updated);
     }
@@ -403,20 +471,35 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException {
+    public boolean deleteAddress(int employeeId, int addressId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        int deleted = 0;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE address SET is_deleted = true WHERE employee_id = ? AND address_id = ?");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteAddressQuery);
 
-        preparedStatement.setInt(1, employeeId);
-        preparedStatement.setInt(2, addressId);
+            preparedStatement.setInt(1, employeeId);
+            preparedStatement.setInt(2, addressId);
 
-        int deleted = preparedStatement.executeUpdate();
+            deleted = preparedStatement.executeUpdate();
 
-        preparedStatement.close();
-        connection.close();
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return (1 == deleted);
     }
@@ -425,47 +508,135 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean deleteEmployee(int employeeId)  throws SQLException, ClassNotFoundException {
+    public boolean deleteEmployee(int employeeId) {
+        int employeeDeleted = 0;
+
+        if (getAddresses(employeeId).isEmpty()) {
+            employeeDeleted = deleteEmployeeOnly(employeeId);
+        } else {
+            employeeDeleted = deleteEmployeeAndAddress(employeeId);
+        }
+
+        return (0 != employeeDeleted);
+    }
+
+    /**
+     * deletes employee which doesn't have address
+     *
+     * @param employeeId    for which details to be removed
+     *
+     * @return    deleted count
+     */
+    private int deleteEmployeeOnly(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        int employeeDeleted = 0;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee, address SET employee.is_deleted = true"
-                + ", address.is_deleted = true WHERE id = ? AND employee_id = ?");
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeOnlyQuery);
+            preparedStatement.setInt(1,employeeId);
+            employeeDeleted = preparedStatement.executeUpdate();
+            preparedStatement.close();
 
-        preparedStatement.setInt(1,employeeId);
-        preparedStatement.setInt(2,employeeId);
+            if (1 == employeeDeleted) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+         } catch (SQLException e) {
+             try {
+                 connection.rollback();
+             } catch (SQLException ex) {
+                 ex.printStackTrace();
+             }
+             e.printStackTrace();
+         } finally {
+             try {
+                 connection.close();
+             } catch (SQLException e) {
+                 e.printStackTrace();
+             }
+         }
 
-        int deleted = preparedStatement.executeUpdate();
+        return employeeDeleted;
+    }
 
-        preparedStatement.close();
-        connection.close();
+    /**
+     * deletes employee's details
+     *
+     * @param employeeId    for which details to be removed
+     *
+     * @return    deleted count
+     */
+    private int deleteEmployeeAndAddress(int employeeId) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        int employeeDeleted = 0;
 
-        return (0 != deleted);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeQuery);
+            preparedStatement.setInt(1,employeeId);
+            employeeDeleted = preparedStatement.executeUpdate();
+            preparedStatement.close();
+
+            if (0 != employeeDeleted) {
+                connection.commit();
+            } else { 
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return employeeDeleted;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Employee> getDeleted() throws ClassNotFoundException, SQLException {
+    public List<Employee> getDeletedEmployees() {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-
-        Statement statement = connection.createStatement();
-        ResultSet deletedEmployees = statement
-                .executeQuery("SELECT id, name, date_of_birth, salary, mobile_number FROM employee WHERE is_deleted = true");
-
         List<Employee> deletedEmployeesList = new ArrayList<Employee>();
 
-        while (deletedEmployees.next()) {
-            deletedEmployeesList.add(new Employee(deletedEmployees.getInt("id"), deletedEmployees.getString("name")
-                    , deletedEmployees.getDate("date_of_birth"), deletedEmployees.getFloat("salary")
-                    , deletedEmployees.getString("mobile_number"), null));
-        }
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet deletedEmployees = statement
+                    .executeQuery(getDeletedEmployeesQuery);
 
-        statement.close();
-        connection.close();
+            while (deletedEmployees.next()) {
+                deletedEmployeesList.add(new Employee(deletedEmployees.getInt("id"), deletedEmployees.getString("name")
+                        , deletedEmployees.getDate("date_of_birth"), deletedEmployees.getFloat("salary")
+                        , deletedEmployees.getString("mobile_number"), null));
+            }
+
+            statement.close();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return deletedEmployeesList;
     }
@@ -473,39 +644,142 @@ public class EmployeeDaoImpl implements EmployeeDao {
     /**
      * {@inheritDoc}
      */
-    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException {
+    public boolean restoreDeleted(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        int restored = 0;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("UPDATE employee, address SET employee.is_deleted = false"
-                + ", address.is_deleted = false WHERE employee.id = ?");
-        preparedStatement.setInt(1,employeeId);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(getDeletedAddressesQuery);
+            preparedStatement.setInt(1,employeeId);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-        int isRestored = preparedStatement.executeUpdate();
+            if (!resultSet.next()) {
+                restored = restoreEmployeeOnly(employeeId);
+            } else {
+                restored = restoreEmployeeAndAddress(employeeId);
+            }
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
-        preparedStatement.close();
-        connection.close();
+        return (0 != restored);
+    }
 
-        return (0 != isRestored);
+    /**
+     * restores employee which doesn't have address
+     *
+     * @param employeeId    for which details to be restored
+     *
+     * @return    restored count
+     */
+    private int restoreEmployeeOnly(int employeeId) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        int employeeRestored = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(restoreEmployeeOnlyQuery);
+            preparedStatement.setInt(1,employeeId);
+            employeeRestored = preparedStatement.executeUpdate();
+            preparedStatement.close();
+
+            if (0 != employeeRestored) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+         } catch (SQLException e) {
+             try {
+                 connection.rollback();
+             } catch (SQLException ex) {
+                 ex.printStackTrace();
+             }
+             e.printStackTrace();
+         } finally {
+             try {
+                 connection.close();
+             } catch (SQLException e) {
+                 e.printStackTrace();
+             }
+         }
+
+        return employeeRestored;
+    }
+
+    /**
+     * restores employee's details
+     *
+     * @param employeeId    for which details to be restored
+     *
+     * @return    restored count
+     */
+    private int restoreEmployeeAndAddress(int employeeId) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        int employeeRestored = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(restoreEmployeeQuery);
+            preparedStatement.setInt(1,employeeId);
+            employeeRestored = preparedStatement.executeUpdate();
+            preparedStatement.close();
+
+            if (0 != employeeRestored) {
+                connection.commit();
+            } else { 
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return employeeRestored;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean isEmployeePresent(int employeeId) throws ClassNotFoundException, SQLException {
+    public boolean isEmployeePresent(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
+        boolean isPresent = false;
 
-        PreparedStatement preparedStatement = connection
-                .prepareStatement("SELECT id FROM employee WHERE id = ? AND is_deleted = false");
-        preparedStatement.setInt(1,employeeId);
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(isEmployeePresentQuery);
+            preparedStatement.setInt(1, employeeId);
 
-        boolean isPresent = preparedStatement.executeQuery().next();
+            isPresent = preparedStatement.executeQuery().next();
 
-        preparedStatement.close();
-        connection.close();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         return isPresent;
     }

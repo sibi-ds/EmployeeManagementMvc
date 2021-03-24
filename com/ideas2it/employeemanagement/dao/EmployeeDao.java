@@ -1,9 +1,9 @@
 package com.ideas2it.employeemanagement.dao;
 
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,21 +26,25 @@ public interface EmployeeDao {
      *
      * @return    true if employee details stored successfully else false 
      */
-    boolean insertEmployee(Employee employee) throws SQLException, ClassNotFoundException;
+    boolean insertEmployee(Employee employee);
 
     /**
      * insert address details of employee into the database
      *
+     * @param  employeeId    employee ID for which basic details inserted
+     * @param  addresses     list of addresses
+     * @param  connection    connection object
+     *
      * @return    true if address inserted successfully else false
      */
-    public boolean insertAddress(Address address) throws SQLException, ClassNotFoundException;
+    public boolean insertAddresses(int employeeId, List<Address> addresses, Connection connection);
 
     /**
-     * used to display details of all employees
+     * requests details of all employees
      *
      * @return    list consisting employee details
      */
-    public List<Employee> getEmployees() throws SQLException, ClassNotFoundException;
+    public List<Employee> getEmployees();
 
     /**
      * requests database to give the details of an employee
@@ -49,7 +53,7 @@ public interface EmployeeDao {
      *
      * @return    object of employee details
      */
-    public Employee getEmployee(int employeeId) throws SQLException, ClassNotFoundException;
+    public Employee getEmployee(int employeeId);
 
     /**
      * request database to give all addresses of an employee
@@ -58,47 +62,17 @@ public interface EmployeeDao {
      *
      * @return    map containing address ID and address details 
      */
-    public Map<Integer, Address> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
+    public Map<Integer, Address> getAddresses(int employeeId);
 
     /**
      * updates name of an employee
      *
      * @param employeeId    to update certain employee
-     * @param name          updated name value
+     * @param employee      employee with updated details
      *
      * @return    true if updation successful else false 
      */
-    public boolean updateName(int employeeId, String name) throws SQLException, ClassNotFoundException;
-
-    /**
-     * updates Date Of Birth of an employee
-     *
-     * @param employeeId    to update certain employee
-     * @param name          updated date of birth value
-     *
-     * @return    true if updation successful else false 
-     */
-    public boolean updateDob(int employeeId, Date dob) throws SQLException, ClassNotFoundException;
-
-    /**
-     * updates salary of an employee
-     *
-     * @param employeeId    to update certain employee
-     * @param name          updated salary value
-     *
-     * @return    true if updation successful else false 
-     */
-    public boolean updateSalary(int employeeId, float salary) throws SQLException, ClassNotFoundException;
-
-    /**
-     * updates mobile number of an employee
-     *
-     * @param employeeId    to update certain employee
-     * @param name          updated mobile number value
-     *
-     * @return    true if updation successful else false 
-     */
-    public boolean updateMobileNumber(int employeeId, String mobileNumber) throws SQLException, ClassNotFoundException;
+    public boolean updateEmployee(int employeeId, Employee employee);
 
     /**
      * requests service to add address to an employee
@@ -108,8 +82,7 @@ public interface EmployeeDao {
      *
      * @return    true if address insertion successfully else false
      */
-    public boolean addAddress(int employeeId, Address address)
-            throws ClassNotFoundException, SQLException;
+    public boolean addAddress(int employeeId, Address address);
 
     /**
      * requests database to update address of an employee
@@ -120,8 +93,7 @@ public interface EmployeeDao {
      *
      * @return    true if address updation successful else false
      */
-    public boolean updateAddressValues(int employeeId, int addressId, Address address)
-            throws ClassNotFoundException, SQLException;
+    public boolean updateAddressValues(int employeeId, int addressId, Address address);
 
     /**
      * requests database to remove an address of an employee
@@ -131,7 +103,7 @@ public interface EmployeeDao {
      *
      * @return    true if address deletion successful else false
      */
-    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException;
+    public boolean deleteAddress(int employeeId, int addressId);
 
     /**
      * request database to delete the employee details
@@ -140,14 +112,14 @@ public interface EmployeeDao {
      *
      * @return    true if removed successfully else false
      */
-    boolean deleteEmployee(int employeeId) throws SQLException, ClassNotFoundException;
+    boolean deleteEmployee(int employeeId);
 
     /**
      * requests database to get deleted employees list
      * 
      * @return    list of deleted employees details
      */
-    public List<Employee> getDeleted() throws ClassNotFoundException, SQLException;
+    public List<Employee> getDeletedEmployees();
 
     /**
      * requests database to restore deleted employee's details
@@ -156,7 +128,7 @@ public interface EmployeeDao {
      * 
      * @return    true if restoration successful else false
      */
-    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException;
+    public boolean restoreDeleted(int employeeId);
 
     /**
      * used to check whether the details of an employee present or not
@@ -165,5 +137,5 @@ public interface EmployeeDao {
      *
      * @return    returns true if employee present else return false
      */
-    boolean isEmployeePresent(int employeeId) throws ClassNotFoundException, SQLException;
+    boolean isEmployeePresent(int employeeId);
 }

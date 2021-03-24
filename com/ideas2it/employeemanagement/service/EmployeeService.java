@@ -2,8 +2,6 @@ package com.ideas2it.employeemanagement.service;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,14 +19,14 @@ public interface EmployeeService {
      * @return    true if employee details stored successfully else false
      */
     public boolean insertEmployee(String name, Date dob, float salary
-            , String mobileNumber, List<List<String>> addresses) throws ClassNotFoundException, SQLException;
+            , String mobileNumber, List<List<String>> addresses);
 
     /**
      * requests DAO to give the deails of all employees
      *
      * @return    list consisting employees details
      */
-    public List<String> getEmployees() throws ClassNotFoundException, SQLException;
+    public List<String> getEmployees();
 
     /**
      * requests DAO to give the deails of the employee
@@ -37,7 +35,7 @@ public interface EmployeeService {
      *
      * @return    string of employee's details
      */
-    public String getEmployee(int employeeId) throws ClassNotFoundException, SQLException;
+    public String getEmployee(int employeeId);
 
     /**
      * requests DAO to give all addresses of an employee
@@ -46,48 +44,17 @@ public interface EmployeeService {
      *
      * @return    map containing address IDs and addresses
      */
-    public Map<Integer, String> getAddresses(int employeeId) throws ClassNotFoundException, SQLException;
+    public Map<Integer, String> getAddresses(int employeeId);
 
     /**
      * updates name of an employee
      *
      * @param employeeId    which need to be updated
-     * @param name          updated name value
+     * @param employeeBasicDetails    updated details of an employee
      *
      * @return    true if updation successful else false
      */
-    public boolean updateName(int employeeId, String name) throws ClassNotFoundException, SQLException;
-
-    /**
-     * updates Date Of Birth of an employee
-     *
-     * @param employeeId    which need to be updated
-     * @param name          updated date of birth value
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateDob(int employeeId, Date dob) throws ClassNotFoundException, SQLException;
-
-    /**
-     * updates salary of an employee
-     *
-     * @param employeeId    which need to be updated
-     * @param name          updated salary value
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateSalary(int employeeId, float salary) throws ClassNotFoundException, SQLException;
-
-    /**
-     * updates mobile number of an employee
-     *
-     * @param employeeId    which need to be updated
-     * @param name          updated mobile number value
-     *
-     * @return    true if updation successful else false
-     */
-    public boolean updateMobileNumber(int employeeId, String mobileNumber)
-            throws ClassNotFoundException, SQLException;
+    public boolean updateEmployee(int employeeId, List<String> employeeBasicDetails);
 
     /**
      * requests DAO to add address to an employee
@@ -97,8 +64,7 @@ public interface EmployeeService {
      *
      * @return    true if address insertion successful else false
      */
-    public boolean addAddress(int employeeId, List<String> address)
-            throws ClassNotFoundException, SQLException;
+    public boolean addAddress(int employeeId, List<String> address);
 
     /**
      * requests DAO to update address of an employee
@@ -109,8 +75,7 @@ public interface EmployeeService {
      *
      * @return    true if address updation successful else false
      */
-    public boolean updateAddressValues(int employeeId, int addressId, List<String> address)
-            throws ClassNotFoundException, SQLException;
+    public boolean updateAddressValues(int employeeId, int addressId, List<String> address);
 
     /**
      * requests DAO to remove an address of an employee
@@ -120,21 +85,21 @@ public interface EmployeeService {
      *
      * @return    true if address deletion successful else false
      */
-    public boolean deleteAddress(int employeeId, int addressId) throws ClassNotFoundException, SQLException;
+    public boolean deleteAddress(int employeeId, int addressId);
 
     /**
      * requesting DAO to remove the details of an employee
      *
      * @return    true if deletion successful else false
      */
-    public boolean deleteEmployee(int employeeId) throws ClassNotFoundException, SQLException;
+    public boolean deleteEmployee(int employeeId);
 
     /**
      * requests DAO to restore get deleted employees list
      * 
      * @return    list of deleted employees
      */
-    public List<String> getDeleted() throws ClassNotFoundException, SQLException;
+    public List<String> getDeletedEmployees();
 
     /**
      * requests DAO to restore deleted employee details
@@ -143,7 +108,7 @@ public interface EmployeeService {
      * 
      * @return    true if restoration successful else false
      */
-    public boolean restoreDeleted(int employeeId) throws ClassNotFoundException, SQLException;
+    public boolean restoreDeleted(int employeeId);
 
     /**
      * checks whether the details of an employee present or not
@@ -152,6 +117,5 @@ public interface EmployeeService {
      *
      * @return    returns true if employee present else return false
      */
-    public boolean isEmployeePresent(int employeeId)
-            throws ClassNotFoundException, SQLException; 
+    public boolean isEmployeePresent(int employeeId); 
 }

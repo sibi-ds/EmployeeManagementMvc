@@ -23,7 +23,7 @@ public class EmployeeView {
     private EmployeeController employeeController = new EmployeeController();
     private Scanner scanner = new Scanner(System.in);
 
-    public void view() throws ClassNotFoundException, SQLException {
+    public void view() {
         byte option = 0;    // to track user's choice
 
         System.out.println("select an option to perform a particular operation on an employee's details");
@@ -66,7 +66,7 @@ public class EmployeeView {
      * reads the employee details from the user and
      * request the controller to store the details
      */
-    private void insertEmployee() throws ClassNotFoundException, SQLException {
+    private void insertEmployee() {
         System.out.println("Enter employee's details ");
         System.out.print("Name              : ");
         String name = scanner.nextLine();
@@ -89,7 +89,7 @@ public class EmployeeView {
      *
      * @return    list of employee addresses
      */
-    private List<List<String>> insertAddresses() throws ClassNotFoundException, SQLException {
+    private List<List<String>> insertAddresses() {
         List<List<String>> addresses = new ArrayList<List<String>>();
 
         String addressInsertionStatement = "1 - Insert address , 2 - Exit from address insertion menu";
@@ -142,7 +142,7 @@ public class EmployeeView {
      *
      * @return    list of employee address details
      */
-    private List<String> insertAddress(String addressType) throws ClassNotFoundException, SQLException {
+    private List<String> insertAddress(String addressType) {
         scanner.skip("[\n\r]{2}");
         System.out.print("Door Number   : ");
         String doorNumber = scanner.nextLine();
@@ -173,10 +173,10 @@ public class EmployeeView {
     /**
      * requests controller to give the details of all employees
      */
-    private void getEmployees() throws ClassNotFoundException, SQLException {
+    private void getEmployees() {
         List<String> employees = employeeController.getEmployees();
 
-        if (0 == employees.size()) {
+        if (employees.isEmpty()) {
             System.out.println("Empty Database");
         } else {
             System.out.println("\n-----Employee Database-----\n");
@@ -191,7 +191,7 @@ public class EmployeeView {
      *
      * @param employeeId    whose details to be retrieved from the database
      */
-    public void getEmployee() throws ClassNotFoundException, SQLException {
+    public void getEmployee() {
         System.out.print("Enter employee ID to get details : ");
         int employeeId = scanner.nextInt();
 
@@ -203,9 +203,9 @@ public class EmployeeView {
     }
 
     /**
-     * updates certain detail of an employee
+     * updates details of an employee
      */
-    private void updateEmployee() throws ClassNotFoundException, SQLException {
+    private void updateEmployee() {
         System.out.print("Enter employeeId to update the details : ");
         int employeeId = scanner.nextInt();
 
@@ -215,31 +215,21 @@ public class EmployeeView {
             System.out.println("Choose which detail need to be updated");
             byte updationOption = 0;
             String updationOptionStatement
-                    = "1 - Update Name , 2 -Update DOB , 3 - Update Salary , 4 - Update Mobile number"
-                    + " , 5 - Update Address , 6 - Exit from employee updation menu";
+                    = "1 - Update Basic Details , 2 - Update Address , 3 - Exit from updation menu";
 
-            while (6 != updationOption) {
+            while (3 != updationOption) {
                 System.out.println(updationOptionStatement);
                 updationOption = scanner.nextByte();
 
                 switch (updationOption) {
                     case 1:
-                        updateName(employeeId);
+                        updateEmployeeDetails(employeeId);
                         break;
                     case 2:
-                        updateDob(employeeId);
-                        break;
-                    case 3:
-                        updateSalary(employeeId);
-                        break;
-                    case 4:
-                        updateMobileNumber(employeeId);
-                        break;
-                    case 5:
                         updateAddress(employeeId);
                         break;
-                    case 6:
-                        updationOption = 6;
+                    case 3:
+                        updationOption = 3;
                         System.out.println("Exited from updation menu");
                         break;
                     default:
@@ -251,20 +241,66 @@ public class EmployeeView {
     }
 
     /**
+     * updates basic details of an employee
+     *
+     * @param employeeId    ID for which details should be updated
+     */
+    private void updateEmployeeDetails(int employeeId) {
+        List<String> employeeBasicDetails = new ArrayList<String>();
+        employeeBasicDetails.add(null);
+        employeeBasicDetails.add(null);
+        employeeBasicDetails.add(null);
+        employeeBasicDetails.add(null);
+
+        System.out.println("Choose which detail need to be updated");
+        byte updationOption = 0;
+        String updationOptionStatement
+                = "1 - Update Name , 2 - Update DOB , 3 - Update Salary , 4 - Update Mobile Number"
+                + " , 5 - Save and Exit from basic details updation menu";
+
+        while (5 != updationOption) {
+            System.out.println(updationOptionStatement);
+            updationOption = scanner.nextByte();
+
+            switch (updationOption) {
+                case 1:
+                    updateName(employeeId, employeeBasicDetails);
+                    break;
+                case 2:
+                    updateDob(employeeId, employeeBasicDetails);
+                    break;
+                case 3:
+                    updateSalary(employeeId, employeeBasicDetails);
+                    break;
+                case 4:
+                    updateMobileNumber(employeeId, employeeBasicDetails);
+                    break;
+                case 5:
+                    updationOption = 5;
+                    if (employeeController.updateEmployee(employeeId, employeeBasicDetails)) {
+                        System.out.println("Updation successful");
+                    } else {
+                        System.out.println("Updation failure");
+                    }
+                    System.out.println("Exited from basic details updation menu");
+                    break;
+                default:
+                    System.out.println("Enter valid option");
+                    break;
+            }
+        }
+    }
+
+    /**
      * updates name of an employee
      *
      * @param employeeId    ID for which name should be updated
      */
-    private void updateName(int employeeId) throws ClassNotFoundException, SQLException {
+    private void updateName(int employeeId, List<String> employeeBasicDetails) {
         System.out.print("Enter updated NAME : ");
         scanner.skip("[\r\n]{2}");
         String name = scanner.nextLine();
-
-        if (employeeController.updateName(employeeId, name)) {
-            System.out.println("Updation Successful");
-        } else {
-            System.out.println("Updation failure");
-        }
+        employeeBasicDetails.set(0, name);
     }
 
     /**
@@ -272,15 +308,10 @@ public class EmployeeView {
      *
      * @param employeeId    ID for which Date Of Birth should be updated
      */
-    private void updateDob(int employeeId) throws ClassNotFoundException, SQLException {
+    private void updateDob(int employeeId, List<String> employeeBasicDetails) {
         System.out.print("Enter updated DOB (YYYY-MM-DD) : ");
-        Date dob = Date.valueOf(validateDate());
-
-        if (employeeController.updateDob(employeeId, dob)) {
-            System.out.println("Updation Successful");
-        } else {
-            System.out.println("Updation failure");
-        }
+        String dob = validateDate();
+        employeeBasicDetails.set(1, dob);
     }
 
     /**
@@ -288,15 +319,10 @@ public class EmployeeView {
      *
      * @param employeeId    ID for which salary should be updated
      */
-    private void updateSalary(int employeeId) throws ClassNotFoundException, SQLException {
+    private void updateSalary(int employeeId, List<String> employeeBasicDetails) {
         System.out.print("Enter updated SALARY : ");
         float salary = scanner.nextFloat();
-
-        if (employeeController.updateSalary(employeeId, salary)) {
-            System.out.println("Updation Successful");
-        } else {
-            System.out.println("Updation failure");
-        }
+        employeeBasicDetails.set(2, String.valueOf(salary));
     }
 
     /**
@@ -304,15 +330,10 @@ public class EmployeeView {
      *
      * @param employeeId    ID for which mobile number should be updated
      */
-    private void updateMobileNumber(int employeeId) throws ClassNotFoundException, SQLException {
+    private void updateMobileNumber(int employeeId, List<String> employeeBasicDetails) {
         System.out.print("Enter updated MOBILE NUMBER : ");
         String mobileNumber = validateMobileNumber();
-
-        if (employeeController.updateMobileNumber(employeeId, mobileNumber)) {
-            System.out.println("Updation Successful");
-        } else {
-            System.out.println("Updation failure");
-        }
+        employeeBasicDetails.set(3, mobileNumber);
     }
 
     /**
@@ -320,7 +341,7 @@ public class EmployeeView {
      *
      * @param employeeId    ID for which address should be updated
      */
-    private void updateAddress(int employeeId) throws ClassNotFoundException, SQLException {
+    private void updateAddress(int employeeId) {
         Map<Integer, String> addresses = employeeController.getAddresses(employeeId);
         List<Integer> addressIds = new ArrayList<>(addresses.keySet());
 
@@ -366,7 +387,7 @@ public class EmployeeView {
      *
      * @param employeeId    in which address should be added
      */
-    private void addAddress(int employeeId) throws ClassNotFoundException, SQLException {
+    private void addAddress(int employeeId) {
         System.out.println("Choose address type\n"
                 + "1 - Permanent Address , 2 - Temporary Address");
 
@@ -405,13 +426,12 @@ public class EmployeeView {
      * @param employeeId    for which address should be updated
      * @param addressIds    list of address IDs
      */
-    private void updateAddressValues(int employeeId, List<Integer> addressIds)
-            throws ClassNotFoundException, SQLException {
+    private void updateAddressValues(int employeeId, List<Integer> addressIds) {
 
         if (addressIds.isEmpty()) {
             System.out.println("No addresses stored in the database");
         } else {
-            System.out.print("Enter address ID to be updated : ");
+            System.out.print("Enter corresponding serial number to be updated : ");
             int addressId = scanner.nextInt();
 
             if ((1 <= addressId) && (addressIds.size() >= addressId)) {
@@ -452,8 +472,7 @@ public class EmployeeView {
      * @param employeeId    for which address should be updated
      * @param addressIds    list of address IDs
      */
-    private void deleteAddress(int employeeId, List<Integer> addressIds)
-            throws ClassNotFoundException, SQLException {
+    private void deleteAddress(int employeeId, List<Integer> addressIds) {
         if (addressIds.isEmpty()) {
             System.out.println("No addresses stored in the database");
         } else {
@@ -477,12 +496,11 @@ public class EmployeeView {
      *
      * @param employeeId    for which addresses to be displayed
      */
-    private void getAddresses(int employeeId, List<Integer> addressIds, Map<Integer, String> addresses)
-            throws ClassNotFoundException, SQLException {
+    private void getAddresses(int employeeId, List<Integer> addressIds, Map<Integer, String> addresses) {
         if (addressIds.isEmpty()) {
             System.out.println("No addresses stored for this employee");
         } else {
-            System.out.println("\n-----The stored addresses of your Employee Id-----");
+            System.out.println("\n-----The stored addresses of your Employee Id-----\n");
             addresses.forEach((addressId, address) -> {
                 System.out.println(address);
             });
@@ -493,7 +511,7 @@ public class EmployeeView {
      * reads the employeeId and request
      * the controller to remove the details of an employee
      */
-    private void deleteEmployee() throws ClassNotFoundException, SQLException {
+    private void deleteEmployee() {
         System.out.print("Enter employee ID to delete the employee : ");
         int employeeId = scanner.nextInt();
 
@@ -509,8 +527,8 @@ public class EmployeeView {
     /**
      * restores the employee details that had been deleted
      */
-    private void restoreEmployee() throws ClassNotFoundException, SQLException {
-        List<String> deletedEmployees = employeeController.getDeleted();
+    private void restoreEmployee() {
+        List<String> deletedEmployees = employeeController.getDeletedEmployees();
 
         if (!deletedEmployees.isEmpty()) {
             byte restoreOption = 0;
@@ -539,13 +557,11 @@ public class EmployeeView {
                         break;
                 }
 
-                deletedEmployees = employeeController.getDeleted();
+                deletedEmployees = employeeController.getDeletedEmployees();
 
                 if (deletedEmployees.isEmpty()) {
                     System.out.println("All details are restored");
                     break;
-                } else {
-                    deletedEmployees = employeeController.getDeleted();
                 }
             }
         } else {
@@ -556,26 +572,25 @@ public class EmployeeView {
     /**
      * reads employee ID and restores that employee
      */
-    private void restoreDeletedEmployeeDetails() throws ClassNotFoundException, SQLException {
+    private void restoreDeletedEmployeeDetails() {
         System.out.print("Enter employee ID that to be restored : ");
         int employeeId = scanner.nextInt();
 
         if (isEmployeePresent(employeeId)) {
             System.out.println("Employee details already in the database");
-        } else if (employeeController.restoreDeleted(employeeId)) {
-            System.out.println("Employee restored successfully");
-        } else if (!isEmployeePresent(employeeId)) {
-            System.out.println("Employee details not present");
         } else {
-            System.out.println("Restoration failure");
+            if (employeeController.restoreDeleted(employeeId)) {
+                System.out.println("Employee restored successfully");
+            } else {
+                System.out.println("Restoration failure");
+            }
         }
     }
 
     /**
      * displays the deleted employees details
      */
-    private void displayDeletedEmployees(List<String> deletedEmployees)
-            throws ClassNotFoundException, SQLException {
+    private void displayDeletedEmployees(List<String> deletedEmployees) {
         if (deletedEmployees.isEmpty()) {
             System.out.println("No deleted employees");
         } else {
@@ -590,9 +605,9 @@ public class EmployeeView {
      *
      * @param employeeId    employeeId to verify the exixtence
      *
+     * @return    true if employee present in database else false
      */
-    private boolean isEmployeePresent(int employeeId)
-            throws ClassNotFoundException, SQLException {
+    private boolean isEmployeePresent(int employeeId) {
         return employeeController.isEmployeePresent(employeeId);
     }
 
@@ -604,7 +619,7 @@ public class EmployeeView {
     private String validateMobileNumber() {
         String mobileNumber = scanner.next();
         if (!mobileNumber.matches("[1-9][0-9]{9}")) {
-            System.out.println("Enter valid mobile number");
+            System.out.print("Enter valid mobile number : ");
             return validateMobileNumber();
         }
         return mobileNumber;
@@ -618,7 +633,7 @@ public class EmployeeView {
     private String validateDate() {
         String dob = scanner.next();
         if (!dob.matches("^((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$")) {
-            System.out.println("Enter valid date format (YYYY/MM/DD)");
+            System.out.print("Enter valid date format (YYYY-MM-DD) : ");
             return validateDate();
         }
         return dob;
