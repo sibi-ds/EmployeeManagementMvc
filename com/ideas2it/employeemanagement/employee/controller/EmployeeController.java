@@ -1,11 +1,11 @@
-package com.ideas2it.employeemanagement.controller;
+package com.ideas2it.employeemanagement.employee.controller;
 
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.ideas2it.employeemanagement.service.EmployeeService;
-import com.ideas2it.employeemanagement.service.impl.EmployeeServiceImpl;
+import com.ideas2it.employeemanagement.employee.service.EmployeeService;
+import com.ideas2it.employeemanagement.employee.service.impl.EmployeeServiceImpl;
 
 /**
  * this class works as a mediater between view and service
@@ -35,6 +35,18 @@ public class EmployeeController {
     }
 
     /**
+     * requests service to assign project to an employee
+     *
+     * @param employeeId    for which projects to be assigned
+     * @param projectId    which project to be assigned
+     *
+     * @return    true if project assigned successfully else false
+     */
+    public boolean assignProject(int employeeId, int projectId) {
+        return employeeServiceImpl.assignProject(employeeId, projectId);
+    }
+
+    /**
      * requests service to give the details of all employees 
      *
      * @return    list consisting employee details
@@ -50,8 +62,19 @@ public class EmployeeController {
      *
      * @return    string containing employee details
      */
-    public String getEmployee(int employeeId) {
-        return employeeServiceImpl.getEmployee(employeeId);
+    public String getEmployeeAndAddresses(int employeeId) {
+        return employeeServiceImpl.getEmployeeAndAddresses(employeeId);
+    }
+
+    /**
+     * requests service to give the details of an employee
+     *
+     * @param employeeId    which need to be extracted from the database
+     *
+     * @return    string containing employee details
+     */
+    public String getEmployeeAndProjects(int employeeId) {
+        return employeeServiceImpl.getEmployeeAndProjects(employeeId);
     }
 
     /**
@@ -66,15 +89,20 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to update name of an employee
+     * requests service to update details of an employee
      *
-     * @param employeeId    employee ID for which details to be updated
-     * @param employeeBasicDetails    updated basic details of an employee
+     * @param employeeId      to update certain employee
+     * @param name            name of the employee
+     * @param dob             Date Of Birth of the employee
+     * @param salary          salary of the employee
+     * @param mobileNumber    mobile number of the employee  
      *
      * @return    true if updation successful else false
      */
-    public boolean updateEmployee(int employeeId, List<String> employeeBasicDetails) {
-        return employeeServiceImpl.updateEmployee(employeeId, employeeBasicDetails);
+    public boolean updateEmployee(int employeeId, String name, Date dob
+            , float salary, String mobileNumber) {
+        return employeeServiceImpl.updateEmployee(employeeId, name
+                , dob, salary, mobileNumber);
     }
 
     /**
@@ -127,9 +155,9 @@ public class EmployeeController {
     }
 
     /**
-     * requests service to restore get deleted employees list
+     * requests service to get deleted employees list
      * 
-     * @return    list of deleted employee IDs
+     * @return    list of deleted employees
      */
     public List<String> getDeletedEmployees() {
         return employeeServiceImpl.getDeletedEmployees();
@@ -155,5 +183,16 @@ public class EmployeeController {
      */
     public boolean isEmployeePresent(int employeeId) {
         return employeeServiceImpl.isEmployeePresent(employeeId);
+    }
+
+    /**
+     * requests service to check whether project present or not
+     *
+     * @param projectId    Project ID
+     *
+     * @return    true if project present else false
+     */
+    public boolean isProjectPresent(int projectId) {
+        return employeeServiceImpl.isProjectPresent(projectId);
     }
 }

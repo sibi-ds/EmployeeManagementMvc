@@ -1,14 +1,14 @@
-package com.ideas2it.employeemanagement.dao;
+package com.ideas2it.employeemanagement.employee.dao;
 
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import com.ideas2it.employeemanagement.model.Address;
-import com.ideas2it.employeemanagement.model.Employee;
+import com.ideas2it.employeemanagement.employee.model.Address;
+import com.ideas2it.employeemanagement.employee.model.Employee;
+import com.ideas2it.employeemanagement.project.model.Project;
 
 /**
  * this interface class is used as DAO layer
@@ -40,14 +40,24 @@ public interface EmployeeDao {
     public boolean insertAddresses(int employeeId, List<Address> addresses, Connection connection);
 
     /**
-     * requests details of all employees
+     * requests database to assign project to an employee
+     *
+     * @param employeeId    for which projects to be assigned
+     * @param project       project object
+     *
+     * @return    true if project assigned successfully else false
+     */
+    public boolean assignProject(int employeeId, Project project);
+
+    /**
+     * requests details of all employees along with thier addresses
      *
      * @return    list consisting employee details
      */
     public List<Employee> getEmployees();
 
     /**
-     * requests database to give the details of an employee
+     * requests database to give the details of an employee with corresponding addresses
      *
      * @param employeeId    which need to be retrieved from the database
      *
@@ -56,36 +66,44 @@ public interface EmployeeDao {
     public Employee getEmployee(int employeeId);
 
     /**
+     * requests database to give the details of an employee
+     *
+     * @param employeeId    whose details with corresponding projects assigned to be retrieved
+     *
+     * @return    object of employee details
+     */
+    public Employee getSpecifiedEmployee(int employeeId);
+
+    /**
      * request database to give all addresses of an employee
      *
-     * @param employeeId    to update certain employee
+     * @param employeeId    whose addresses need to be retrieved
      *
-     * @return    map containing address ID and address details 
+     * @return    map containing address ID and addresses
      */
     public Map<Integer, Address> getAddresses(int employeeId);
 
     /**
-     * updates name of an employee
+     * updates details of an employee
      *
-     * @param employeeId    to update certain employee
      * @param employee      employee with updated details
      *
      * @return    true if updation successful else false 
      */
-    public boolean updateEmployee(int employeeId, Employee employee);
+    public boolean updateEmployee(Employee employee);
 
     /**
-     * requests service to add address to an employee
+     * used to add address to an employee
      *
      * @param employeeId      employee ID for which address to be added
      * @param address         employee address details
      *
-     * @return    true if address insertion successfully else false
+     * @return    true if address insertion successful else false
      */
     public boolean addAddress(int employeeId, Address address);
 
     /**
-     * requests database to update address of an employee
+     * used to update address of an employee
      *
      * @param employeeId      employee ID for which address to be updated
      * @param addressId       address ID for which address to be updated
@@ -108,16 +126,16 @@ public interface EmployeeDao {
     /**
      * request database to delete the employee details
      *
-     * @param  employeeId    for which employee to be removed
+     * @param employeeId    for which employee to be removed
      *
-     * @return    true if removed successfully else false
+     * @return    true if employee removed successfully else false
      */
     boolean deleteEmployee(int employeeId);
 
     /**
      * requests database to get deleted employees list
      * 
-     * @return    list of deleted employees details
+     * @return    list of deleted employees
      */
     public List<Employee> getDeletedEmployees();
 
@@ -135,7 +153,7 @@ public interface EmployeeDao {
      *
      * @param employeeId    employeeId to verify the exixtence
      *
-     * @return    returns true if employee present else return false
+     * @return    true if employee present else false
      */
     boolean isEmployeePresent(int employeeId);
 }

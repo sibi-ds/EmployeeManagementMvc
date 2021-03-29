@@ -1,10 +1,11 @@
-package com.ideas2it.employeemanagement.model;
+package com.ideas2it.employeemanagement.employee.model;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ideas2it.employeemanagement.model.Address;
+import com.ideas2it.employeemanagement.employee.model.Address;
+import com.ideas2it.employeemanagement.project.model.Project;
 
 /**
  * POJO class used to create object of employee that contains
@@ -21,6 +22,7 @@ public class Employee {
     private float salary;
     private String mobileNumber;
     private List<Address> addresses;
+    private List<Project> projects;
 
     private Employee() {
     }
@@ -33,6 +35,14 @@ public class Employee {
         this.salary = salary;
         this.mobileNumber = mobileNumber;
         this.addresses = addresses;
+    }
+
+    public Employee(int id, String name, Date dateOfBirth, float salary, String mobileNumber) {
+        this.id = id;
+        this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.salary = salary;
+        this.mobileNumber = mobileNumber;
     }
 
     public Employee(String name, Date dateOfBirth, float salary
@@ -49,6 +59,10 @@ public class Employee {
         this.dateOfBirth = dateOfBirth;
         this.salary = salary;
         this.mobileNumber = mobileNumber;
+    }
+
+    public Employee(int id) {
+        this.id = id;
     }
 
     public void setId(int id) {
@@ -71,8 +85,12 @@ public class Employee {
         this.mobileNumber = mobileNumber;
     }
 
-    public void SetAddresses(List<Address> addresses) {
+    public void setAddresses(List<Address> addresses) {
         this.addresses = addresses;
+    }
+
+    public void setProjects(List<Project> projects) {
+        this.projects = projects;
     }
 
     public int getId() {
@@ -97,6 +115,10 @@ public class Employee {
 
     public List<Address> getAddresses() {
         return addresses;
+    }
+
+    public List<Project> getProjects() {
+        return projects;
     }
 
     public String toString() {

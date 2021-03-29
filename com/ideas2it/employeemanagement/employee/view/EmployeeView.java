@@ -1,4 +1,4 @@
-package com.ideas2it.employeemanagement.view;
+package com.ideas2it.employeemanagement.employee.view;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.ideas2it.employeemanagement.controller.EmployeeController;
+import com.ideas2it.employeemanagement.employee.controller.EmployeeController;
 
 /**
  * this class used to interact with the user
@@ -23,13 +23,14 @@ public class EmployeeView {
     private Scanner scanner = new Scanner(System.in);
 
     public void view() {
-        byte option = 0;    // to track user's choice
+        byte option = 0;
 
         System.out.println("select an option to perform a particular operation on an employee's details");
-        String optionStatement = "1 - Create Employee , 2 - Display All Employees ,"
-                + " 3 - Display Employee , 4 - Update Employee , 5 - Delete Employee , 6 - Restore Employee , 7 - Exit" ;
+        String optionStatement = "1 - Create Employee , 2 - Assign project , 3 - Display All Employees"
+                + " , 4 - Display Employee (Along with Addresses) , 5 - Display Employee (Along with projects)"
+                + " , 6 - Update Employee , 7 - Delete Employee , 8 - Restore Employee , 9 - Exit" ;
 
-        while (7 != option) {
+        while (9 != option) {
             System.out.println(optionStatement);
             option = scanner.nextByte();
             scanner.skip("[\n\r]{2}");
@@ -39,21 +40,27 @@ public class EmployeeView {
                     insertEmployee();
                     break;
                 case 2:
-                    getEmployees();
+                    assignProjects();
                     break;
                 case 3:
-                    getEmployee();
+                    getEmployees();
                     break;
                 case 4:
-                    updateEmployee();
+                    getEmployeeAndAddresses();
                     break;
                 case 5:
-                    deleteEmployee();
+                    getEmployeeAndProjects();
                     break;
                 case 6:
-                    restoreEmployee();
+                    updateEmployee();
                     break;
                 case 7:
+                    deleteEmployee();
+                    break;
+                case 8:
+                    restoreEmployee();
+                    break;
+                case 9:
                     break;
                 default:
                     System.out.println("Enter valid option");
@@ -170,6 +177,58 @@ public class EmployeeView {
     }
 
     /**
+     * used to assign projects to an employee
+     */
+    private void assignProjects() {
+        System.out.print("Enter Employee ID to assign Projects : ");
+        int employeeId = scanner.nextInt();
+
+        if (!isEmployeePresent(employeeId)) {
+            System.out.println("Employee not present");
+        } else {
+            System.out.println("Enter from the following options");
+            String optionStatement = "1 - Assign projects to an employee"
+                   + " , 2 - Exit from the project assignation";
+            byte option = 0;
+
+            while (2 != option) {
+                System.out.println(optionStatement);
+                option = scanner.nextByte();
+
+                switch (option) {
+                    case 1:
+                        assignProject(employeeId);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        System.out.println("Enter valid option");
+                }
+            }
+        }
+    }
+
+    /**
+     * requests controller to assign project to an employee
+     *
+     * @param employeeId    for which projects to be assigned
+     */
+    private void assignProject(int employeeId) {
+        System.out.print("Enter Project ID : ");
+        int projectId = scanner.nextInt();
+
+        if (!isProjectPresent(projectId)) {
+            System.out.println("Project not present");
+        } else {
+            if (employeeController.assignProject(employeeId, projectId)) {
+                System.out.println("Project assigned successfully");
+            } else {
+                System.out.println("Project assignation failure");
+            }
+        }
+    }
+
+    /**
      * requests controller to give the details of all employees
      */
     private void getEmployees() {
@@ -187,17 +246,29 @@ public class EmployeeView {
 
     /**
      * requests controller to give the details of an employee
-     *
-     * @param employeeId    whose details to be retrieved from the database
      */
-    public void getEmployee() {
+    public void getEmployeeAndAddresses() {
         System.out.print("Enter employee ID to get details : ");
         int employeeId = scanner.nextInt();
 
         if (!isEmployeePresent(employeeId)) {
             System.out.println("Employee not present");
         } else {
-            System.out.println(employeeController.getEmployee(employeeId));
+            System.out.println(employeeController.getEmployeeAndAddresses(employeeId));
+        }
+    }
+
+    /**
+     * requests controller to give the details of an employee
+     */
+    public void getEmployeeAndProjects() {
+        System.out.print("Enter employee ID to get details : ");
+        int employeeId = scanner.nextInt();
+
+        if (!isEmployeePresent(employeeId)) {
+            System.out.println("Employee not present");
+        } else {
+            System.out.println(employeeController.getEmployeeAndProjects(employeeId));
         }
     }
 
@@ -245,11 +316,10 @@ public class EmployeeView {
      * @param employeeId    ID for which details should be updated
      */
     private void updateEmployeeDetails(int employeeId) {
-        List<String> employeeBasicDetails = new ArrayList<String>();
-        employeeBasicDetails.add(null);
-        employeeBasicDetails.add(null);
-        employeeBasicDetails.add(null);
-        employeeBasicDetails.add(null);
+        String name = null;
+        Date dob = null;
+        float salary = 0.0f;
+        String mobileNumber = null;
 
         System.out.println("Choose which detail need to be updated");
         byte updationOption = 0;
@@ -263,20 +333,21 @@ public class EmployeeView {
 
             switch (updationOption) {
                 case 1:
-                    updateName(employeeId, employeeBasicDetails);
+                    name = updateName();
                     break;
                 case 2:
-                    updateDob(employeeId, employeeBasicDetails);
+                    dob = updateDob();
                     break;
                 case 3:
-                    updateSalary(employeeId, employeeBasicDetails);
+                    salary = updateSalary();
                     break;
                 case 4:
-                    updateMobileNumber(employeeId, employeeBasicDetails);
+                    mobileNumber = updateMobileNumber();
                     break;
                 case 5:
                     updationOption = 5;
-                    if (employeeController.updateEmployee(employeeId, employeeBasicDetails)) {
+                    if (employeeController.updateEmployee(employeeId, name, dob
+                            , salary, mobileNumber)) {
                         System.out.println("Updation successful");
                     } else {
                         System.out.println("Updation failure");
@@ -293,46 +364,46 @@ public class EmployeeView {
     /**
      * updates name of an employee
      *
-     * @param employeeId    ID for which name should be updated
+     * @return    updated name
      */
-    private void updateName(int employeeId, List<String> employeeBasicDetails) {
+    private String updateName() {
         System.out.print("Enter updated NAME : ");
         scanner.skip("[\r\n]{2}");
         String name = scanner.nextLine();
-        employeeBasicDetails.set(0, name);
+        return name;
     }
 
     /**
      * updates Date Of Birth of an employee
      *
-     * @param employeeId    ID for which Date Of Birth should be updated
+     * @return    updated date of birth
      */
-    private void updateDob(int employeeId, List<String> employeeBasicDetails) {
+    private Date updateDob() {
         System.out.print("Enter updated DOB (YYYY-MM-DD) : ");
-        String dob = validateDate();
-        employeeBasicDetails.set(1, dob);
+        Date dob = Date.valueOf(validateDate());
+        return dob;
     }
 
     /**
      * updates salary of an employee
      *
-     * @param employeeId    ID for which salary should be updated
+     * @return    updated salary
      */
-    private void updateSalary(int employeeId, List<String> employeeBasicDetails) {
+    private float updateSalary() {
         System.out.print("Enter updated SALARY : ");
         float salary = scanner.nextFloat();
-        employeeBasicDetails.set(2, String.valueOf(salary));
+        return salary;
     }
 
     /**
      * updates mobile number of an employee
      *
-     * @param employeeId    ID for which mobile number should be updated
+     * @return    updated mobile number
      */
-    private void updateMobileNumber(int employeeId, List<String> employeeBasicDetails) {
+    private String updateMobileNumber() {
         System.out.print("Enter updated MOBILE NUMBER : ");
         String mobileNumber = validateMobileNumber();
-        employeeBasicDetails.set(3, mobileNumber);
+        return mobileNumber;
     }
 
     /**
@@ -608,6 +679,17 @@ public class EmployeeView {
      */
     private boolean isEmployeePresent(int employeeId) {
         return employeeController.isEmployeePresent(employeeId);
+    }
+
+    /**
+     * checks whether project present or not
+     *
+     * @param projectId    Project ID
+     *
+     * @return    true if project present else false
+     */
+    private boolean isProjectPresent(int projectId) {
+        return employeeController.isProjectPresent(projectId);
     }
 
     /**

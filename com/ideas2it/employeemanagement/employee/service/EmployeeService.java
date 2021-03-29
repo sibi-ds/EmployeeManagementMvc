@@ -1,8 +1,10 @@
-package com.ideas2it.employeemanagement.service;
+package com.ideas2it.employeemanagement.employee.service;
 
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+
+import com.ideas2it.employeemanagement.employee.model.Employee;
 
 /**
  * interface class of the employee service
@@ -27,44 +29,76 @@ public interface EmployeeService {
             , String mobileNumber, List<List<String>> addresses);
 
     /**
-     * requests DAO to give the deails of all employees
+     * requests DAO to assign project to an employee
+     *
+     * @param employeeId    for which projects to be assigned
+     * @param projectId    which project to be assigned
+     *
+     * @return    true if project assigned successfully else false
+     */
+    public boolean assignProject(int employeeId, int projectId);
+
+    /**
+     * requests DAO to give the details of all employees
      *
      * @return    list consisting employees details
      */
     public List<String> getEmployees();
 
     /**
-     * requests DAO to give the deails of the employee
+     * requests DAO to give the deails of the employee and corresponding addresses
      *
      * @param employeeId    which need to be retrieved from the database
      *
      * @return    string of employee's details
      */
-    public String getEmployee(int employeeId);
+    public String getEmployeeAndAddresses(int employeeId);
+
+    /**
+     * requests DAO to give the deails of the employee and corresponding projects assigned
+     *
+     * @param employeeId    which need to be retrieved from the database
+     *
+     * @return    string of employee's details
+     */
+    public String getEmployeeAndProjects(int employeeId);
+
+    /**
+     * requests DAO to give the details of the employees in the list
+     *
+     * @param employeeIds    list of employee Ids
+     *
+     * @return    list of employees details
+     */
+    public List<Employee> getSpecifiedEmployees(List<Integer> employeeIds);
 
     /**
      * requests DAO to give all addresses of an employee
      *
-     * @param employeeId    to update certain employee
+     * @param employeeId    for which addresses to be retrieved
      *
      * @return    map containing address IDs and addresses
      */
     public Map<Integer, String> getAddresses(int employeeId);
 
     /**
-     * updates name of an employee
+     * updates details of an employee
      *
-     * @param employeeId    which need to be updated
-     * @param employeeBasicDetails    updated details of an employee
+     * @param employeeId      for which details should be updated
+     * @param name            name of the employee
+     * @param dob             Date Of Birth of the employee
+     * @param salary          salary of the employee
+     * @param mobileNumber    mobile number of the employee  
      *
      * @return    true if updation successful else false
      */
-    public boolean updateEmployee(int employeeId, List<String> employeeBasicDetails);
+    public boolean updateEmployee(int employeeId, String name, Date dob
+            , float salary, String mobileNumber);
 
     /**
      * requests DAO to add address to an employee
      *
-     * @param employeeId      employee ID for which details to be added
+     * @param employeeId      for which details to be added
      * @param address         employee address details
      *
      * @return    true if address insertion successful else false
@@ -85,8 +119,8 @@ public interface EmployeeService {
     /**
      * requests DAO to remove an address of an employee
      *
-     * @param employeeId      employee ID for which an address to be deleted
-     * @param addressId       address ID for which details to be deleted
+     * @param employeeId      for which an address to be deleted
+     * @param addressId       whose address to be deleted
      *
      * @return    true if address deletion successful else false
      */
@@ -95,12 +129,14 @@ public interface EmployeeService {
     /**
      * requesting DAO to remove the details of an employee
      *
+     * @param employeeId      whose details to be deleted
+     *
      * @return    true if deletion successful else false
      */
     public boolean deleteEmployee(int employeeId);
 
     /**
-     * requests DAO to restore get deleted employees list
+     * requests DAO to get deleted employees list
      * 
      * @return    list of deleted employees
      */
@@ -109,7 +145,7 @@ public interface EmployeeService {
     /**
      * requests DAO to restore deleted employee details
      * 
-     * @param employeeId    which need to be restored
+     * @param employeeId    whose details need to be restored
      * 
      * @return    true if restoration successful else false
      */
@@ -123,4 +159,13 @@ public interface EmployeeService {
      * @return    returns true if employee present else return false
      */
     public boolean isEmployeePresent(int employeeId); 
+
+    /**
+     * requests project service to check whether project present or not
+     *
+     * @param projectId    whose existence need to be checked
+     *
+     * @return    true if project present else false
+     */
+    public boolean isProjectPresent(int projectId);
 }

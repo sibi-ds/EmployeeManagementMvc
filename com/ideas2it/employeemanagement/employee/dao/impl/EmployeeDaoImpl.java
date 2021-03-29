@@ -1,4 +1,4 @@
-package com.ideas2it.employeemanagement.dao.impl;
+package com.ideas2it.employeemanagement.employee.dao.impl;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -12,9 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ideas2it.employeemanagement.dao.EmployeeDao;
-import com.ideas2it.employeemanagement.model.Address;
-import com.ideas2it.employeemanagement.model.Employee;
+import com.ideas2it.employeemanagement.employee.dao.EmployeeDao;
+import com.ideas2it.employeemanagement.employee.model.Address;
+import com.ideas2it.employeemanagement.employee.model.Employee;
+import com.ideas2it.employeemanagement.project.model.Project;
 import com.ideas2it.employeemanagement.sessionfactoy.DatabaseConnection;
 
 /**
@@ -34,6 +35,9 @@ public class EmployeeDaoImpl implements EmployeeDao {
             + " (address_type, employee_id, door_number, street, village, district, state, pincode)"
             + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
+    private final String assignProjectQuery = "INSERT IGNORE INTO employee_project"
+            + " (project_id, employee_id) VALUES (?, ?)";
+
     private final String getEmployeeQuery = "SELECT employee.id, employee.name, employee.date_of_birth"
             + ", employee.salary, employee.mobile_number, address.address_id, address.address_type"
             + ", address.door_number, address.street, address.village, address.district, address.state"
@@ -45,6 +49,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             + ", address.door_number, address.street, address.village, address.district, address.state"
             + ", address.pincode FROM employee LEFT JOIN address ON employee.id = address.employee_id"
             + " AND address.is_deleted = false WHERE employee.is_deleted = false";
+
+    private final String getSpecifiedEmployeeQuery = "SELECT e.id, e.name, e.date_of_birth, e.salary, e.mobile_number"
+            + ",ep.project_id FROM employee e LEFT JOIN employee_project ep ON e.id = ep.employee_id"
+            + " WHERE e.id = ? AND e.is_deleted = false";
 
     private final String getAddressesQuery = "SELECT address_id, address_type, door_number, street"
             + ", village, district, state, pincode FROM address WHERE employee_id = ? AND is_deleted = false";
@@ -149,6 +157,40 @@ public class EmployeeDaoImpl implements EmployeeDao {
         }
 
         return (insertedCount == addresses.size());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean assignProject(int employeeId, Project project) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        int assigned = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(assignProjectQuery);
+            preparedStatement.setInt(1, project.getId());
+            preparedStatement.setInt(2, employeeId);
+            assigned = preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return (0 != assigned);
     }
 
     /**
@@ -294,6 +336,51 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
+    public Employee getSpecifiedEmployee(int employeeId) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        Employee employee = null;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(getSpecifiedEmployeeQuery);
+            preparedStatement.setInt(1,employeeId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                String name = resultSet.getString("name");
+                Date dob = resultSet.getDate("date_of_birth");
+                float salary = resultSet.getFloat("salary");
+                String mobileNumber = resultSet.getString("mobile_number");
+                List<Project> projects = new ArrayList<Project>();
+
+                do {
+                    if (0 != resultSet.getInt("project_id")) {
+                        projects.add(new Project(resultSet.getInt("project_id")));
+                    }
+                } while (resultSet.next());
+
+                employee = new Employee(employeeId, name, dob, salary, mobileNumber);
+                employee.setProjects(projects);
+            }
+
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return employee;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Map<Integer, Address> getAddresses(int employeeId) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
@@ -329,10 +416,11 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean updateEmployee(int employeeId, Employee employee) {
+    public boolean updateEmployee(Employee employee) {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
 
+        int employeeId = employee.getId();
         String name = employee.getName();
         Date dob = employee.getDateOfBirth();
         float salary = employee.getSalary();
@@ -536,26 +624,21 @@ public class EmployeeDaoImpl implements EmployeeDao {
     public List<Employee> getDeletedEmployees() {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-        List<Employee> deletedEmployeesList = new ArrayList<Employee>();
+        List<Employee> deletedEmployees = new ArrayList<Employee>();
 
         try {
             Statement statement = connection.createStatement();
-            ResultSet deletedEmployees = statement
+            ResultSet resultSet = statement
                     .executeQuery(getDeletedEmployeesQuery);
 
-            while (deletedEmployees.next()) {
-                deletedEmployeesList.add(new Employee(deletedEmployees.getInt("id"), deletedEmployees.getString("name")
-                        , deletedEmployees.getDate("date_of_birth"), deletedEmployees.getFloat("salary")
-                        , deletedEmployees.getString("mobile_number"), null));
+            while (resultSet.next()) {
+                deletedEmployees.add(new Employee(resultSet.getInt("id"), resultSet.getString("name")
+                        , resultSet.getDate("date_of_birth"), resultSet.getFloat("salary")
+                        , resultSet.getString("mobile_number"), null));
             }
 
             statement.close();
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             e.printStackTrace();
         } finally {
             try {
@@ -565,7 +648,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
             }
         }
 
-        return deletedEmployeesList;
+        return deletedEmployees;
     }
 
     /**
