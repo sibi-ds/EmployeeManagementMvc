@@ -38,12 +38,24 @@ public class EmployeeController {
      * requests service to assign project to an employee
      *
      * @param employeeId    for which projects to be assigned
-     * @param projectId    which project to be assigned
+     * @param projectId     which project to be assigned
      *
      * @return    true if project assigned successfully else false
      */
     public boolean assignProject(int employeeId, int projectId) {
         return employeeServiceImpl.assignProject(employeeId, projectId);
+    }
+
+    /**
+     * requests service to unassign project of an employee
+     *
+     * @param employeeId    for which projects to be assigned
+     * @param projectId     which project to be unassigned
+     *
+     * @return    true if project unassigned successfully else false
+     */
+    public boolean unassignProject(int employeeId, int projectId) {
+        return employeeServiceImpl.unassignProject(employeeId, projectId);
     }
 
     /**

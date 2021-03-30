@@ -26,11 +26,11 @@ public class EmployeeView {
         byte option = 0;
 
         System.out.println("select an option to perform a particular operation on an employee's details");
-        String optionStatement = "1 - Create Employee , 2 - Assign project , 3 - Display All Employees"
-                + " , 4 - Display Employee (Along with Addresses) , 5 - Display Employee (Along with projects)"
-                + " , 6 - Update Employee , 7 - Delete Employee , 8 - Restore Employee , 9 - Exit" ;
+        String optionStatement = "1 - Create Employee , 2 - Assign project , 3 - Unassign project, 4 - Display All Employees"
+                + " , 5 - Display Employee (Along with Addresses) , 6 - Display Employee (Along with projects)"
+                + " , 7 - Update Employee , 8 - Delete Employee , 9 - Restore Employee , 10 - Exit" ;
 
-        while (9 != option) {
+        while (10 != option) {
             System.out.println(optionStatement);
             option = scanner.nextByte();
             scanner.skip("[\n\r]{2}");
@@ -40,27 +40,30 @@ public class EmployeeView {
                     insertEmployee();
                     break;
                 case 2:
-                    assignProjects();
+                    assignProject();
                     break;
                 case 3:
-                    getEmployees();
+                    unassignProject();
                     break;
                 case 4:
-                    getEmployeeAndAddresses();
+                    getEmployees();
                     break;
                 case 5:
-                    getEmployeeAndProjects();
+                    getEmployeeAndAddresses();
                     break;
                 case 6:
-                    updateEmployee();
+                    getEmployeeAndProjects();
                     break;
                 case 7:
-                    deleteEmployee();
+                    updateEmployee();
                     break;
                 case 8:
-                    restoreEmployee();
+                    deleteEmployee();
                     break;
                 case 9:
+                    restoreEmployee();
+                    break;
+                case 10:
                     break;
                 default:
                     System.out.println("Enter valid option");
@@ -119,13 +122,19 @@ public class EmployeeView {
                             System.out.println("Permanent address inserted already");
                         } else {
                             isPermanentAddressInserted = addresses.add(insertAddress("permanent"));
+
+                            if (isPermanentAddressInserted) {
+                                System.out.println("permanent address added to the list");
+                            } else {
+                                System.out.println("permanent address not added to the list");
+                            }
                         }
                         break;
                     case 2:
                         if (addresses.add(insertAddress("temporary"))) {
-                            System.out.println("temporary address inserted successfully");
+                            System.out.println("temporary address added to the list");
                         } else {
-                            System.out.println("temporary address insertion failure");
+                            System.out.println("temporary address not added to the list");
                         }
                         break;
                     default:
@@ -177,9 +186,9 @@ public class EmployeeView {
     }
 
     /**
-     * used to assign projects to an employee
+     * used to assign project to an employee
      */
-    private void assignProjects() {
+    private void assignProject() {
         System.out.print("Enter Employee ID to assign Projects : ");
         int employeeId = scanner.nextInt();
 
@@ -187,7 +196,7 @@ public class EmployeeView {
             System.out.println("Employee not present");
         } else {
             System.out.println("Enter from the following options");
-            String optionStatement = "1 - Assign projects to an employee"
+            String optionStatement = "1 - Assign project to an employee"
                    + " , 2 - Exit from the project assignation";
             byte option = 0;
 
@@ -197,7 +206,7 @@ public class EmployeeView {
 
                 switch (option) {
                     case 1:
-                        assignProject(employeeId);
+                        assignProjectDetails(employeeId);
                         break;
                     case 2:
                         break;
@@ -213,7 +222,7 @@ public class EmployeeView {
      *
      * @param employeeId    for which projects to be assigned
      */
-    private void assignProject(int employeeId) {
+    private void assignProjectDetails(int employeeId) {
         System.out.print("Enter Project ID : ");
         int projectId = scanner.nextInt();
 
@@ -224,6 +233,58 @@ public class EmployeeView {
                 System.out.println("Project assigned successfully");
             } else {
                 System.out.println("Project assignation failure");
+            }
+        }
+    }
+
+    /**
+     * used to unassign project to an employee
+     */
+    private void unassignProject() {
+        System.out.print("Enter Employee ID to assign Projects : ");
+        int employeeId = scanner.nextInt();
+
+        if (!isEmployeePresent(employeeId)) {
+            System.out.println("Employee not present");
+        } else {
+            System.out.println("Enter from the following options");
+            String optionStatement = "1 - Unassign project from an employee"
+                   + " , 2 - Exit from the project assignation";
+            byte option = 0;
+
+            while (2 != option) {
+                System.out.println(optionStatement);
+                option = scanner.nextByte();
+
+                switch (option) {
+                    case 1:
+                        unassignProjectDetails(employeeId);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        System.out.println("Enter valid option");
+                }
+            }
+        }
+    }
+
+    /**
+     * requests controller to unassign project
+     *
+     * @param employeeId    for which projects to be unassigned
+     */
+    private void unassignProjectDetails(int employeeId) {
+        System.out.print("Enter Project ID : ");
+        int projectId = scanner.nextInt();
+
+        if (!isProjectPresent(projectId)) {
+            System.out.println("Project not present");
+        } else {
+            if (employeeController.unassignProject(employeeId, projectId)) {
+                System.out.println("Project unassigned");
+            } else {
+                System.out.println("Project unassignation failure");
             }
         }
     }

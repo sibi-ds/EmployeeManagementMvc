@@ -50,6 +50,16 @@ public interface EmployeeDao {
     public boolean assignProject(int employeeId, Project project);
 
     /**
+     * requests database to unassign project of an employee
+     *
+     * @param employeeId    for which projects to be unassigned
+     * @param project       project object
+     *
+     * @return    true if project unassigned successfully else false
+     */
+    public boolean unassignProject(int employeeId, Project project);
+
+    /**
      * requests details of all employees along with thier addresses
      *
      * @return    list consisting employee details

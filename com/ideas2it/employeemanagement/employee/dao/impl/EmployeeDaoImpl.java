@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ideas2it.employeemanagement.common.SqlQueries;
 import com.ideas2it.employeemanagement.employee.dao.EmployeeDao;
 import com.ideas2it.employeemanagement.employee.model.Address;
 import com.ideas2it.employeemanagement.employee.model.Employee;
@@ -28,57 +29,6 @@ import com.ideas2it.employeemanagement.sessionfactoy.DatabaseConnection;
  */
 public class EmployeeDaoImpl implements EmployeeDao {
 
-    private final String insertEmployeeQuery
-            = "INSERT INTO employee (name, date_of_birth, salary, mobile_number) VALUES (?, ?, ?, ?)";
-
-    private final String insertAddressQuery = "INSERT INTO address"
-            + " (address_type, employee_id, door_number, street, village, district, state, pincode)"
-            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-    private final String assignProjectQuery = "INSERT IGNORE INTO employee_project"
-            + " (project_id, employee_id) VALUES (?, ?)";
-
-    private final String getEmployeeQuery = "SELECT employee.id, employee.name, employee.date_of_birth"
-            + ", employee.salary, employee.mobile_number, address.address_id, address.address_type"
-            + ", address.door_number, address.street, address.village, address.district, address.state"
-            + ", address.pincode FROM employee LEFT JOIN address ON employee.id = address.employee_id"
-            + " AND address.is_deleted = false WHERE employee.id = ? AND employee.is_deleted = false";
-
-    private final String getEmployeesQuery = "SELECT employee.id, employee.name, employee.date_of_birth"
-            + ", employee.salary, employee.mobile_number, address.address_id, address.address_type"
-            + ", address.door_number, address.street, address.village, address.district, address.state"
-            + ", address.pincode FROM employee LEFT JOIN address ON employee.id = address.employee_id"
-            + " AND address.is_deleted = false WHERE employee.is_deleted = false";
-
-    private final String getSpecifiedEmployeeQuery = "SELECT e.id, e.name, e.date_of_birth, e.salary, e.mobile_number"
-            + ",ep.project_id FROM employee e LEFT JOIN employee_project ep ON e.id = ep.employee_id"
-            + " WHERE e.id = ? AND e.is_deleted = false";
-
-    private final String getAddressesQuery = "SELECT address_id, address_type, door_number, street"
-            + ", village, district, state, pincode FROM address WHERE employee_id = ? AND is_deleted = false";
-
-    private final String updateEmployeeQuery = "UPDATE employee SET name = IFNULL(?, name)"
-            + ", date_of_birth = IFNULL(?, date_of_birth), salary = IFNULL(?, salary)"
-            + ", mobile_number = IFNULL(?, mobile_number) WHERE id = ?";
-
-    private final String updateAddressValuesQuery = "UPDATE address SET address_type = ?"
-            + ", door_number = ?, street = ?, village = ?, district = ?, state = ?"
-            + ", pincode = ? WHERE address_id = ? AND employee_id = ?";
-
-    private final String deleteAddressQuery = "UPDATE address SET is_deleted = true"
-            + " WHERE employee_id = ? AND address_id = ?";
-
-    private final String deleteEmployeeQuery = "UPDATE employee as e LEFT JOIN address as a "
-            + "ON e.id = a.employee_id SET e.is_deleted = true, a.is_deleted = true WHERE e.id = ?";
-
-    private final String getDeletedEmployeesQuery = "SELECT id, name, date_of_birth, salary"
-            + ", mobile_number FROM employee WHERE is_deleted = true";
-
-    private final String restoreEmployeeQuery = "UPDATE employee as e LEFT JOIN address as a "
-            + "ON e.id = a.employee_id SET e.is_deleted = false, a.is_deleted = false WHERE e.id = ?";
-
-    private final String isEmployeePresentQuery = "SELECT id FROM employee WHERE id = ? AND is_deleted = false";
-
     /**
      * {@inheritDoc}
      */
@@ -90,7 +40,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
 
         try {
             PreparedStatement preparedStatement = connection
-                    .prepareStatement(insertEmployeeQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+                    .prepareStatement(SqlQueries.INSERT_EMPLOYEE_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setString(1, employee.getName());
             preparedStatement.setDate(2, employee.getDateOfBirth());
@@ -136,7 +86,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int insertedCount = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(insertAddressQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.INSERT_ADDRESS_QUERY);
 
             for (Address address : addresses) {
                 preparedStatement.setString(1, address.getAddressType());
@@ -169,7 +119,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int assigned = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(assignProjectQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.ASSIGN_PROJECT_QUERY);
             preparedStatement.setInt(1, project.getId());
             preparedStatement.setInt(2, employeeId);
             assigned = preparedStatement.executeUpdate();
@@ -197,13 +147,47 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
+    public boolean unassignProject(int employeeId, Project project) {
+        DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
+        Connection connection = databaseConnection.getConnection();
+        int unassigned = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UNASSIGN_PROJECT_QUERY);
+            preparedStatement.setInt(1, project.getId());
+            preparedStatement.setInt(2, employeeId);
+            unassigned = preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return (0 != unassigned);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Employee> getEmployees() {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
         List<Employee> employees = null;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getEmployeesQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_EMPLOYEES_QUERY);
             ResultSet resultSet = preparedStatement.executeQuery();
             employees = getEmployeesDetails(resultSet);
             preparedStatement.close();
@@ -275,7 +259,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         Employee employee = null;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_EMPLOYEE_QUERY);
             preparedStatement.setInt(1,employeeId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -342,7 +326,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         Employee employee = null;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getSpecifiedEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_SPECIFIED_EMPLOYEE_QUERY);
             preparedStatement.setInt(1,employeeId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -387,7 +371,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         Map<Integer, Address> addresses = new LinkedHashMap<Integer, Address>();
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getAddressesQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_ADDRESSES_QUERY);
             preparedStatement.setInt(1,employeeId);
             ResultSet addressesAvailable = preparedStatement.executeQuery();
 
@@ -432,7 +416,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int updated = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(updateEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UPDATE_EMPLOYEE_QUERY);
 
             preparedStatement.setString(1, name);
             preparedStatement.setDate(2, dob);
@@ -471,7 +455,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int addressesInserted = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(insertAddressQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.INSERT_ADDRESS_QUERY);
 
             preparedStatement.setString(1, address.getAddressType());
             preparedStatement.setInt(2, employeeId);
@@ -513,7 +497,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int updated = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(updateAddressValuesQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UPDATE_ADDRESS_VALUES_QUERY);
 
             preparedStatement.setString(1, address.getAddressType());
             preparedStatement.setString(2, address.getDoorNumber());
@@ -556,7 +540,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int deleted = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteAddressQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.DELETE_ADDRESS_QUERY);
 
             preparedStatement.setInt(1, employeeId);
             preparedStatement.setInt(2, addressId);
@@ -592,13 +576,18 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int deleted = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.DELETE_EMPLOYEE_QUERY);
 
             preparedStatement.setInt(1, employeeId);
 
             deleted = preparedStatement.executeUpdate();
             preparedStatement.close();
-            connection.commit();
+
+            if ((0 != deleted) && unassignProjects(employeeId, connection)) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -618,6 +607,33 @@ public class EmployeeDaoImpl implements EmployeeDao {
     }
 
     /**
+     * unaasign all projects when employee is deleted
+     *
+     * @param projectId           for which employees to be unassigned
+     * @param connectionObject    connection object
+     *
+     * @return    true if all project unassigned else false
+     */
+    private boolean unassignProjects(int employeeId, Connection connectionObject) {
+        Connection connection = connectionObject;
+        int unassigned = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UNASSIGN_PROJECTS_QUERY);
+
+            preparedStatement.setInt(1, employeeId);
+
+            unassigned = preparedStatement.executeUpdate();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            unassigned = -1;
+            e.printStackTrace();
+        }
+
+        return (-1 != unassigned);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -629,7 +645,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement
-                    .executeQuery(getDeletedEmployeesQuery);
+                    .executeQuery(SqlQueries.GET_DELETED_EMPLOYEES_QUERY);
 
             while (resultSet.next()) {
                 deletedEmployees.add(new Employee(resultSet.getInt("id"), resultSet.getString("name")
@@ -660,7 +676,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         int restored = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(restoreEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.RESTORE_EMPLOYEE_QUERY);
 
             preparedStatement.setInt(1, employeeId);
 
@@ -695,7 +711,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
         boolean isPresent = false;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(isEmployeePresentQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.IS_EMPLOYEE_PRESENT_QUERY);
             preparedStatement.setInt(1, employeeId);
 
             isPresent = preparedStatement.executeQuery().next();

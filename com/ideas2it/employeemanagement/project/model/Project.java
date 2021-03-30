@@ -15,13 +15,13 @@ import com.ideas2it.employeemanagement.employee.model.Employee;
  */
 public class Project {
 
-    int id;
-    String title;
-    String clientName;
-    int managerId;
-    Date startDate;
-    Date endDate;
-    List<Employee> employees;
+    private int id;
+    private String title;
+    private String clientName;
+    private int managerId;
+    private Date startDate;
+    private Date endDate;
+    private List<Employee> employees;
 
     private Project() {
     }

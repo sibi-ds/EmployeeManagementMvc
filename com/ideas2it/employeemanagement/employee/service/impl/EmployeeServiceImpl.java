@@ -58,6 +58,19 @@ public class EmployeeServiceImpl implements EmployeeService {
      * {@inheritDoc}
      */
     @Override
+    public boolean unassignProject(int employeeId, int projectId) {
+        ProjectService projectServiceImpl = new ProjectServiceImpl();
+        List<Integer> projectIds = new ArrayList<Integer>();
+        projectIds.add(projectId);
+        List<Project> projects = projectServiceImpl.getSpecifiedProjects(projectIds);
+        Project project = projects.get(0);
+        return employeeDaoImpl.unassignProject(employeeId, project);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getEmployees() {
         List<String> employees = new ArrayList<String>();
 

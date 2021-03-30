@@ -32,11 +32,21 @@ public interface EmployeeService {
      * requests DAO to assign project to an employee
      *
      * @param employeeId    for which projects to be assigned
-     * @param projectId    which project to be assigned
+     * @param projectId     which project to be assigned
      *
      * @return    true if project assigned successfully else false
      */
     public boolean assignProject(int employeeId, int projectId);
+
+    /**
+     * requests DAO to unassign project to an employee
+     *
+     * @param employeeId    for which projects to be unassigned
+     * @param projectId     which project to be unassigned
+     *
+     * @return    true if project assigned successfully else false
+     */
+    public boolean unassignProject(int employeeId, int projectId);
 
     /**
      * requests DAO to give the details of all employees

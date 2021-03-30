@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ideas2it.employeemanagement.common.SqlQueries;
 import com.ideas2it.employeemanagement.employee.model.Employee;
 import com.ideas2it.employeemanagement.project.dao.ProjectDao;
 import com.ideas2it.employeemanagement.project.model.Project;
@@ -25,36 +26,6 @@ import com.ideas2it.employeemanagement.sessionfactoy.DatabaseConnection;
  */
 public class ProjectDaoImpl implements ProjectDao {
 
-    private final String insertProjectQuery = "INSERT INTO project (project_title, client_name"
-            + ", manager_id, start_date, end_date) VALUES (?, ?, ?, ?, ?)";
-
-    private final String assignEmployeeQuery = "INSERT IGNORE INTO employee_project"
-            + " (project_id, employee_id) VALUES (?, ?)";
-
-    private final String getProjectsQuery = "SELECT id, project_title, client_name, manager_id"
-            + ", start_date, end_date FROM project WHERE is_deleted = false";
-
-    private final String getProjectQuery = "SELECT p.id, p.project_title, p.client_name, p.manager_id"
-            + ", p.start_date, p.end_date, ep.employee_id FROM project p LEFT JOIN employee_project ep ON"
-            + " p.id = ep.project_id WHERE p.id = ? AND p.is_deleted = false";
-
-    private final String updateProjectQuery = "UPDATE project SET project_title = IFNULL(?, project_title)"
-            + ", client_name = IFNULL(?, client_name), manager_id = IFNULL(?, manager_id)"
-            + ", start_date = IFNULL(?, start_date), end_date = IFNULL(?, end_date)"
-            + " WHERE id = ? AND is_deleted = false";
-
-    private final String deleteEmployeeQuery = "DELETE from employee_project"
-            + " WHERE project_id = ? AND employee_id = ?";
-
-    private final String deleteProjectQuery = "UPDATE project SET is_deleted = true WHERE id = ?";
-
-    private final String getDeletedProjectsQuery = "SELECT id, project_title, client_name, manager_id"
-            + ", start_date, end_date FROM project WHERE is_deleted = true";
-
-    private final String restoreProjectQuery = "UPDATE project SET is_deleted = false WHERE id = ?";
-
-    private final String isProjectPresentQuery = "SELECT id FROM project WHERE id = ? AND is_deleted = false";
-
     /**
      * {@inheritDoc}
      */
@@ -66,7 +37,7 @@ public class ProjectDaoImpl implements ProjectDao {
 
         try {
             PreparedStatement preparedStatement = connection
-                    .prepareStatement(insertProjectQuery);
+                    .prepareStatement(SqlQueries.INSERT_PROJECT_QUERY);
 
             preparedStatement.setString(1, project.getTitle());
             preparedStatement.setString(2, project.getClientName());
@@ -111,7 +82,7 @@ public class ProjectDaoImpl implements ProjectDao {
         int assigned = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(assignEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.ASSIGN_EMPLOYEE_QUERY);
 
             for (Employee employee : employees) {
                 preparedStatement.setInt(1, projectId);
@@ -145,7 +116,7 @@ public class ProjectDaoImpl implements ProjectDao {
         List<Project> projects = null;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getProjectsQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_PROJECTS_QUERY);
             ResultSet resultSet = preparedStatement.executeQuery();
             projects = getProjectsDetails(resultSet);
             preparedStatement.close();
@@ -174,15 +145,9 @@ public class ProjectDaoImpl implements ProjectDao {
 
         try {
             while (resultSet.next()) {
-                int projectId = resultSet.getInt("id");
-                String projectTitle = resultSet.getString("project_title");
-                String clientName = resultSet.getString("client_name");
-                int managerId = resultSet.getInt("manager_id");
-                Date startDate = resultSet.getDate("start_date");
-                Date endDate = resultSet.getDate("end_date");
-
-                projects.add(new Project(projectId, projectTitle
-                        , clientName, managerId, startDate, endDate));
+                projects.add(new Project(resultSet.getInt("id"), resultSet.getString("project_title")
+                        , resultSet.getString("client_name"), resultSet.getInt("manager_id")
+                        , resultSet.getDate("start_date"), resultSet.getDate("end_date")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -202,7 +167,7 @@ public class ProjectDaoImpl implements ProjectDao {
         Project project = null;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(getProjectQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.GET_PROJECT_QUERY);
             preparedStatement.setInt(1,projectId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -268,7 +233,7 @@ public class ProjectDaoImpl implements ProjectDao {
         int updated = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(updateProjectQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UPDATE_PROJECT_QUERY);
 
             preparedStatement.setString(1, project.getTitle());
             preparedStatement.setString(2, project.getClientName());
@@ -312,7 +277,7 @@ public class ProjectDaoImpl implements ProjectDao {
         int assigned = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(assignEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.ASSIGN_EMPLOYEE_QUERY);
 
             preparedStatement.setInt(1, projectId);
             preparedStatement.setInt(2, employeeId);
@@ -343,7 +308,7 @@ public class ProjectDaoImpl implements ProjectDao {
         int deleted = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteEmployeeQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UNASSIGN_EMPLOYEE_QUERY);
 
             preparedStatement.setInt(1, projectId);
             preparedStatement.setInt(2, employeeId);
@@ -374,11 +339,16 @@ public class ProjectDaoImpl implements ProjectDao {
         int deleted = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteProjectQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.DELETE_PROJECT_QUERY);
             preparedStatement.setInt(1, projectId);
             deleted = preparedStatement.executeUpdate();
             preparedStatement.close();
-            connection.commit();
+
+            if ((0 != deleted) && unassignEmployees(projectId, connection)) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -398,29 +368,46 @@ public class ProjectDaoImpl implements ProjectDao {
     }
 
     /**
+     * unassign employees when project is deleted
+     *
+     * @param projectId           for which employees to be unassigned
+     * @param connectionObject    connection object
+     *
+     * @return    true if all employees unassigned else false
+     */
+    private boolean unassignEmployees(int projectId, Connection connectionObject) {
+        Connection connection = connectionObject;
+        int unassigned = 0;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.UNASSIGN_EMPLOYEES_QUERY);
+
+            preparedStatement.setInt(1, projectId);
+
+            unassigned = preparedStatement.executeUpdate();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            unassigned = -1;
+            e.printStackTrace();
+        }
+
+        return (-1 != unassigned);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public List<Project> getDeletedProjects() {
         DatabaseConnection databaseConnection = DatabaseConnection.connectDatabase();
         Connection connection = databaseConnection.getConnection();
-        List<Project> deletedProjects = new ArrayList<Project>();
+        List<Project> deletedProjects = null;
 
         try {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(getDeletedProjectsQuery);
+            ResultSet resultSet = statement.executeQuery(SqlQueries.GET_DELETED_PROJECTS_QUERY);
 
-            while (resultSet.next()) {
-                int projectId = resultSet.getInt("id");
-                String projectTitle = resultSet.getString("project_title");
-                String clientName = resultSet.getString("client_name");
-                int managerId = resultSet.getInt("manager_id");
-                Date startDate = resultSet.getDate("start_date");
-                Date endDate = resultSet.getDate("end_date");
-
-                deletedProjects.add(new Project(projectId, projectTitle
-                        , clientName, managerId, startDate, endDate));
-            }
+            deletedProjects = getProjectsDetails(resultSet);
 
             statement.close();
         } catch (SQLException e) {
@@ -445,7 +432,7 @@ public class ProjectDaoImpl implements ProjectDao {
         int restored = 0;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(restoreProjectQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.RESTORE_PROJECT_QUERY);
 
             preparedStatement.setInt(1, projectId);
 
@@ -480,7 +467,7 @@ public class ProjectDaoImpl implements ProjectDao {
         boolean isPresent = false;
 
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(isProjectPresentQuery);
+            PreparedStatement preparedStatement = connection.prepareStatement(SqlQueries.IS_PROJECT_PRESENT_QUERY);
             preparedStatement.setInt(1, projectId);
             isPresent = preparedStatement.executeQuery().next();
             preparedStatement.close();
