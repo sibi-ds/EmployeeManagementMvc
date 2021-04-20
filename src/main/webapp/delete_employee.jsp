@@ -8,7 +8,8 @@
 </head>
 <body>
     <form action="employee?action=delete_employee" method="post">
-        <label>Employee ID : </label> <input type="number" name="employee_id" required="" />
+        <label>Employee ID : </label>
+        <input type="number" name="employee_id" required="" />
         <input type="submit" value="Delete Employee" /><br>
     </form><br><br>
     

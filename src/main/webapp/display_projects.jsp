@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> 
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+	pageEncoding="ISO-8859-1"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,42 +9,44 @@
 <title>Display All Projects</title>
 </head>
 <body>
-    <a href="index.jsp">
-        <button>Home</button>
-    </a>
-    
-    <a href="project.jsp">
-        <button>Back</button>
-    </a>
-    
-    <div>
-        <strong>${message}</strong>
-    </div><br>
-    
-    <table border="1">
-        <thead>
-            <tr>
-			    <th>Project ID</td>
-			    <th>Title</td>
-			    <th>Client Name</td>
-			    <th>Manager ID</td>
-			    <th>Start Date</td>
-			    <th>End Date</td>
-            </tr>
-        </thead>
+	<a href="index.jsp">
+		<button>Home</button>
+	</a>
+
+	<a href="project.jsp">
+		<button>Back</button>
+	</a>
+	<br>
+	<br>
+
+	<div>
+		<strong>${message}</strong>
+	</div>
+	<br>
+
+	<table border="1">
+		<thead>
+			<tr>
+				<th>Project ID</th>
+				<th>Title</th>
+				<th>Client Name</th>
+				<th>Manager ID</th>
+				<th>Start Date</th>
+				<th>End Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			<c:forEach items="${projects}" var="project">
+				<tr>
+					<td><c:out value="${project.getId()}"></c:out></td>
+					<td><c:out value="${project.getTitle()}"></c:out></td>
+					<td><c:out value="${project.getClientName()}"></c:out></td>
+					<td><c:out value="${project.getManagerId()}"></c:out></td>
+					<td><c:out value="${project.getStartDate()}"></c:out></td>
+					<td><c:out value="${project.getEndDate()}"></c:out></td>
+				<tr>
+			</c:forEach>
 		</tbody>
-            <c:forEach items="${projects}" var="project">
-                <c:set var="projectDetails" value="${fn:split(project,',')}" />
-                <tr>
-                    <td><c:out value="${projectDetails[0]}"></c:out></td>
-                    <td><c:out value="${projectDetails[1]}"></c:out></td>
-                    <td><c:out value="${projectDetails[2]}"></c:out></td>
-                    <td><c:out value="${projectDetails[3]}"></c:out></td>
-                    <td><c:out value="${projectDetails[4]}"></c:out></td>
-                    <td><c:out value="${projectDetails[5]}"></c:out></td>
-                <tr>
-            </c:forEach> 
-	    </tbody>
-    </table>
+	</table>
 </body>
 </html>

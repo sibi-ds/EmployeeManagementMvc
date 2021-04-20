@@ -17,7 +17,7 @@ import com.ideas2it.employeemanagement.project.model.Project;
 public interface EmployeeDao {
 
     /**
-     * used to store details in employee database
+     * stores the employee details
      *
      * @param  employee    object of employee details
      *
@@ -26,14 +26,14 @@ public interface EmployeeDao {
     public boolean insertEmployee(Employee employee);
 
     /**
-     * requests details of all employees along with thier addresses
+     * get details of all employees along with their addresses
      *
      * @return    list consisting employee details
      */
     public List<Employee> getEmployees();
 
     /**
-     * requests database to give the details of an employee
+     * get the details of an employee
      *
      * @param employeeId    whose details need to be retrieved from the database
      *
@@ -42,7 +42,7 @@ public interface EmployeeDao {
     public Employee getEmployee(int employeeId);
 
     /**
-     * requests database to give the deails of the employee
+     * get the details of the employee
      *
      * @param employeeId    whose details need to be retrieved from the database
      *
@@ -51,7 +51,7 @@ public interface EmployeeDao {
     public Employee getEmployeeAndAddresses(int employeeId);
     
     /**
-     * requests database to give the deails of the employee
+     * get the details of the employee
      *
      * @param employeeId    whose details need to be retrieved from the database
      *
@@ -60,7 +60,7 @@ public interface EmployeeDao {
     public Employee getEmployeeAndProjects(int employeeId);
 	
     /**
-     * requests database to give the details of an employee
+     * get the details of an employee
      *
      * @param employeeId    whose details need to be retrieved
      *
@@ -78,14 +78,14 @@ public interface EmployeeDao {
     public boolean updateEmployee(Employee employee);
 
     /**
-     * requests database to give deleted employees list
+     * get the deleted employees list
      * 
      * @return    list of deleted employees
      */
     public List<Employee> getDeletedEmployees();
 	
     /**
-     * used to check whether the details of an employee present or not
+     * checks whether the details of an employee present or not
      *
      * @param employeeId    employeeId to verify its exixtence
      *
@@ -94,7 +94,7 @@ public interface EmployeeDao {
     boolean isEmployeePresent(int employeeId);
     
     /**
-     * used to check whether the details of an employee deleted already or not
+     * checks whether the details of an employee deleted already or not
      *
      * @param employeeId    employeeId to verify its deletion
      *

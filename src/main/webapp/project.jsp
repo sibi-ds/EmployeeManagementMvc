@@ -44,9 +44,15 @@
             </a><br><br>
         </div>
 
-        <a href="index.jsp">
-            <button>Home</button>
-        </a>
+		<a href="index.jsp">
+			<button
+				style="height: 50px; width: 400px; font-size: 30px; border-radius: 30px">Home</button>
+		</a><br>
+		<br>
+
+		<div>
+			<h1>${message}</h1>
+		</div>
     </div>
 </body>
 </html>

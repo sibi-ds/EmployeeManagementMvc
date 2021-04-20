@@ -15,7 +15,7 @@ import com.ideas2it.employeemanagement.project.model.Project;
 public interface ProjectDao {
 
     /**
-     * used to store project in employee database
+     * stores the project details
      *
      * @param  project    object of project details
      *
@@ -24,14 +24,14 @@ public interface ProjectDao {
     public boolean insertProject(Project project);
 
     /**
-     * requests details of all projects
+     * get the details of all projects
      *
      * @return    list consisting all project details
      */
     public List<Project> getProjects();
 
     /**
-     * requests database to give the details of a project
+     * get the details of a project
      *
      * @param projectId    whose details need to be retrieved from the database
      *
@@ -40,7 +40,7 @@ public interface ProjectDao {
     public Project getProject(int projectId);
 
     /**
-     * requests database to give the details of project
+     * get the details of project
      *
      * @param projectId    which need to be extracted
      *
@@ -49,7 +49,7 @@ public interface ProjectDao {
     public Project getSpecifiedProject(int projectId);
 	
     /**
-     * requests database to update the project details
+     * updates the project details
      *
      * @param project    object of updated project details
      *
@@ -58,7 +58,7 @@ public interface ProjectDao {
     public boolean updateProject(Project project);
 
     /**
-     * requests database to get deleted projects list
+     * get the deleted projects list
      * 
      * @return    list of deleted projects
      */
