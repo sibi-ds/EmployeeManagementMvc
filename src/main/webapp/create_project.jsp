@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,18 +16,26 @@
 </style>
 </head>
 <body>
-	<form action="project?action=create_project" method="post">
+	<form method="post">
+	    <input type="hidden" name="project_id" value="${project.getId()}" />
 	    <label>Title</label>
-		<input type="text" name="title" required="" /> <br> <br>
+		<input type="text" name="title" required="" value="${project.getTitle()}" /> <br> <br>
 		<label>Client Name</label>
-		<input type="text" name="client_name" required="" /> <br> <br>
+		<input type="text" name="client_name" required="" value="${project.getClientName()}" /> <br> <br>
 		<label>Manager ID</label>
-		<input type="number" name="manager_id" required="" /> <br> <br>
+		<input type="number" name="manager_id" required="" value="${project.getManagerId()}" /> <br> <br>
 		<label>Start Date</label>
-		<input type="date" name="start_date" required="" /> <br> <br>
+		<input type="date" name="start_date" required="" value="${project.getStartDate()}" /> <br> <br>
 		<label>End Date</label>
-		<input type="date" name="end_date" required="" /> <br> <br>
-		<input type="submit" value="Create Project" />
+		<input type="date" name="end_date" required="" value="${project.getEndDate()}" /> <br> <br>
+		
+		<c:if test="${null != project.getId()}">
+            <input type="submit" formaction="project?action=update_project" value="Update Project" />
+		</c:if>
+		
+		<c:if test="${null == project.getId()}">
+		    <input type="submit" formaction="project?action=create_project" value="Create Project" />
+		</c:if>
 	</form>
 	<br>
 

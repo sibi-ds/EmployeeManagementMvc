@@ -53,7 +53,7 @@
 						</a></td>
 						<td><a
 							href="project?action=get_assigned_employees&project_id=${project.getId()}">
-								<button>Assign/Un Assign Employees</button>
+								<button>Assign/UnAssign Employees</button>
 						</a></td>
 						<td><a
 							href="project?action=delete_project&project_id=${project.getId()}">

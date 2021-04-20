@@ -1,7 +1,6 @@
 package com.ideas2it.employeemanagement.project.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import com.ideas2it.employeemanagement.project.service.impl.ProjectServiceImpl;
  * this class works as a mediater between view and service by send and receive
  * the requests
  *
- * @author sibi
+ * @author  sibi
  * @created 2021-03-24
  */
 public class ProjectController extends HttpServlet {
@@ -28,7 +27,7 @@ public class ProjectController extends HttpServlet {
     private ProjectService projectServiceImpl = new ProjectServiceImpl();
     
     /**
-     * process the user request and gives the correspoding response
+     * process the user request and gives the corresponding response
      * 
      * @param request  request from the user
      * @param response response to the request
@@ -55,9 +54,9 @@ public class ProjectController extends HttpServlet {
             case "assign_employees":
                 assignEmployees(request, response);
                 break;
-            case "unassign_employee":
-                unassignEmployee(request, response);
-                break;
+//            case "unassign_employee":
+//                unassignEmployee(request, response);
+//                break;
             case "update_project":
                 updateProject(request, response);
                 break;
@@ -127,6 +126,7 @@ public class ProjectController extends HttpServlet {
      */
     private void insertProject(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         String title = request.getParameter("title");
         String clientName = request.getParameter("client_name");
         int managerId = Integer.parseInt(request.getParameter("manager_id"));
@@ -160,7 +160,7 @@ public class ProjectController extends HttpServlet {
         request.setAttribute("employees", employees);
         request.setAttribute("assignedEmployees", project.getEmployees());
         
-        request.getRequestDispatcher("/assign_employee.jsp").forward(request, response);
+        request.getRequestDispatcher("/assign_employees.jsp").forward(request, response);
     }
     
     /**
@@ -247,7 +247,7 @@ public class ProjectController extends HttpServlet {
         
         request.setAttribute("project", project);
         
-        request.getRequestDispatcher("/update_project.jsp").forward(request, response);
+        request.getRequestDispatcher("/create_project.jsp").forward(request, response);
     }
     
     /**
@@ -291,15 +291,20 @@ public class ProjectController extends HttpServlet {
         int projectId = Integer.parseInt(request.getParameter("project_id"));
         String employeeIds[] = request.getParameterValues("check");
         List<Integer> employees = new ArrayList<Integer>();
+        String message;
         
         if (null != employeeIds) {
             for (String employeeId : employeeIds) {
                 employees.add(Integer.parseInt(employeeId));
             }
+            
+            message = "Employees Assigned Successfully";
+        } else {
+            message = "All Employees Had Been Unassigned";
         }
         
         if (projectServiceImpl.assignEmployees(projectId, employees)) {
-            request.setAttribute("message", "Employees Assigned Successfully");
+            request.setAttribute("message", message);
         } else {
             request.setAttribute("message", "Employees Assignation Failure");
         }
@@ -316,19 +321,19 @@ public class ProjectController extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      */
-    private void unassignEmployee(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int projectId = Integer.parseInt(request.getParameter("project_id"));
-        int employeeId = Integer.parseInt(request.getParameter("employee_id"));
-        
-        if (projectServiceImpl.unassignEmployee(projectId, employeeId)) {
-            request.setAttribute("message", "Employee Unassigned Successfully");
-        } else {
-            request.setAttribute("message", "Employee Unassignation Failure");
-        }
-        
-        request.getRequestDispatcher("/display_project.jsp").forward(request, response);
-    }
+//    private void unassignEmployee(HttpServletRequest request, HttpServletResponse response)
+//            throws ServletException, IOException {
+//        int projectId = Integer.parseInt(request.getParameter("project_id"));
+//        int employeeId = Integer.parseInt(request.getParameter("employee_id"));
+//        
+//        if (projectServiceImpl.unassignEmployee(projectId, employeeId)) {
+//            request.setAttribute("message", "Employee Unassigned Successfully");
+//        } else {
+//            request.setAttribute("message", "Employee Unassignation Failure");
+//        }
+//        
+//        request.getRequestDispatcher("/display_project.jsp").forward(request, response);
+//    }
     
     /**
      * removes the details of a project

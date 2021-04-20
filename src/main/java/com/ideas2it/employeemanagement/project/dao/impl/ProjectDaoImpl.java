@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -37,7 +38,7 @@ public class ProjectDaoImpl implements ProjectDao {
             session.save(project);
             session.getTransaction().commit();
             isInserted = true;
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();
         } finally {
             if (null != session) {
@@ -61,7 +62,7 @@ public class ProjectDaoImpl implements ProjectDao {
             Criteria criteria = session.createCriteria(Project.class);
             criteria.add(Restrictions.eq("isDeleted", false));
             projects = criteria.list();
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();
         } finally {
             if (null != session) {
@@ -86,7 +87,7 @@ public class ProjectDaoImpl implements ProjectDao {
 			
             project.getEmployees().forEach((employee) -> {
             });
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();	
         } finally {
             if (null != session) {
@@ -108,7 +109,7 @@ public class ProjectDaoImpl implements ProjectDao {
         try {
             session = HibernateUtility.getSessionFactory().openSession();  
             project = (Project) session.get(Project.class, projectId);
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();	
         } finally {
             if (null != session) {
@@ -133,7 +134,7 @@ public class ProjectDaoImpl implements ProjectDao {
             session.update(project);
             session.getTransaction().commit();
             isUpdated = true;
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();
         } finally {
             if (null != session) {
@@ -157,7 +158,7 @@ public class ProjectDaoImpl implements ProjectDao {
             Criteria criteria = session.createCriteria(Project.class);
             criteria.add(Restrictions.eq("isDeleted", true));
             deletedProjects = criteria.list();
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();	
         } finally {
             if (null != session) {
@@ -179,7 +180,7 @@ public class ProjectDaoImpl implements ProjectDao {
         try {
             session = HibernateUtility.getSessionFactory().openSession();
             project = (Project) session.get(Project.class, projectId);
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();	
         } finally {
             if (null != session) {
@@ -207,7 +208,7 @@ public class ProjectDaoImpl implements ProjectDao {
         try {
             session = HibernateUtility.getSessionFactory().openSession();
             project = (Project) session.get(Project.class, projectId);
-        } catch (Exception e) {
+        } catch (HibernateException e) {
             e.printStackTrace();	
         } finally {
             if (null != session) {

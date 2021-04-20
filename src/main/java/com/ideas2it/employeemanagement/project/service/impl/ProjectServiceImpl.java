@@ -110,47 +110,47 @@ public class ProjectServiceImpl implements ProjectService {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean assignEmployee(int projectId, int employeeId) {
-        Project project = projectDaoImpl.getProject(projectId);
-        List<Employee> employees = project.getEmployees();
-        EmployeeService employeeServiceImpl = new EmployeeServiceImpl();
-        boolean isAlreadyAssigned = false;
-        
-        for (Employee employeeDetails : employees) {
-            if (employeeDetails.getId() == employeeId) {
-                isAlreadyAssigned = true;
-                break;
-            }
-        }
-        
-        if (isAlreadyAssigned) {
-            return true;
-        } else {
-            employees.add(employeeServiceImpl.getSpecifiedEmployee(employeeId));
-            project.setEmployees(employees);
-            return projectDaoImpl.updateProject(project);
-        }
-    }
+//    @Override
+//    public boolean assignEmployee(int projectId, int employeeId) {
+//        Project project = projectDaoImpl.getProject(projectId);
+//        List<Employee> employees = project.getEmployees();
+//        EmployeeService employeeServiceImpl = new EmployeeServiceImpl();
+//        boolean isAlreadyAssigned = false;
+//        
+//        for (Employee employeeDetails : employees) {
+//            if (employeeDetails.getId() == employeeId) {
+//                isAlreadyAssigned = true;
+//                break;
+//            }
+//        }
+//        
+//        if (isAlreadyAssigned) {
+//            return true;
+//        } else {
+//            employees.add(employeeServiceImpl.getSpecifiedEmployee(employeeId));
+//            project.setEmployees(employees);
+//            return projectDaoImpl.updateProject(project);
+//        }
+//    }
     
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean unassignEmployee(int projectId, int employeeId) {
-        Project project = projectDaoImpl.getProject(projectId);
-        List<Employee> employees = project.getEmployees();
-        
-        for (Employee employee : employees) {
-            if (employeeId == employee.getId()) {
-                employees.remove(employee);
-                break;
-            }
-        }
-        
-        project.setEmployees(employees);
-        return projectDaoImpl.updateProject(project);
-    }
+//    @Override
+//    public boolean unassignEmployee(int projectId, int employeeId) {
+//        Project project = projectDaoImpl.getProject(projectId);
+//        List<Employee> employees = project.getEmployees();
+//        
+//        for (Employee employee : employees) {
+//            if (employeeId == employee.getId()) {
+//                employees.remove(employee);
+//                break;
+//            }
+//        }
+//        
+//        project.setEmployees(employees);
+//        return projectDaoImpl.updateProject(project);
+//    }
     
     /**
      * {@inheritDoc}

@@ -1,21 +1,20 @@
 package com.ideas2it.employeemanagement.employee.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
+//import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ideas2it.employeemanagement.employee.model.Address;
+//import com.ideas2it.employeemanagement.employee.model.Address;
 import com.ideas2it.employeemanagement.employee.model.Employee;
-import com.ideas2it.employeemanagement.project.model.Project;
+//import com.ideas2it.employeemanagement.project.model.Project;
 import com.ideas2it.employeemanagement.employee.service.EmployeeService;
 import com.ideas2it.employeemanagement.employee.service.impl.EmployeeServiceImpl;
 
@@ -23,7 +22,7 @@ import com.ideas2it.employeemanagement.employee.service.impl.EmployeeServiceImpl
  * this class works as a mediater between view and service by send and receive
  * the requests
  *
- * @author sibi
+ * @author  sibi
  * @created 2021-03-03
  */
 public class EmployeeController extends HttpServlet {
@@ -280,8 +279,8 @@ public class EmployeeController extends HttpServlet {
         if (1 < employee.getAddresses().size()) {
             request.setAttribute("temporaryAddress", employee.getAddresses().get(1));
         }
-        
-        request.getRequestDispatcher("/update_employee.jsp").forward(request, response);
+
+        request.getRequestDispatcher("/create_employee.jsp").forward(request, response);
     }
     
     /**

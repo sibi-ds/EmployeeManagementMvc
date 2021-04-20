@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,54 +16,63 @@
 </style>
 </head>
 <body>
-		<form action="employee?action=create_employee" method="post">
-			<h3>Basic Details</h3>
-			<label>Name</label>
-			<input type="text" name="name" required="" /> <br> <br>
-			<label>Date Of Birth</label>
-			<input type="date" name="date_of_birth" required="" /><br> <br>
-			<label>Salary</label>
-			<input type="number" name="salary" required="" /><br> <br>
-			<label>Mobile Number</label>
-			<input type="number" name="mobile_number" required="" /><br> <br>
+	<form method="post">
+	    <input type="hidden" name="employee_id" value="${permanentAddress.getAddressId()}" />
+		<h3>Basic Details</h3>
+		<label>Name</label>
+		<input type="text" name="name" required="" value="${employee.getName()}" /> <br> <br>
+		<label>Date Of Birth</label>
+		<input type="date" name="date_of_birth" required="" value="${employee.getDateOfBirth()}" /><br> <br>
+		<label>Salary</label>
+		<input type="number" name="salary" required="" value="${employee.getSalary()}" /><br> <br>
+		<label>Mobile Number</label>
+		<input type="number" name="mobile_number" required="" value="${employee.getMobileNumber()}" /><br> <br>
 
-			<h3>Permanent Address Details</h3>
-			<label>Door Number</label>
-			<input type="text" name="door_number" required="" /><br> <br>
-			<label>Street</label>
-			<input type="text" name="street" required="" /><br> <br>
-			<label>Village</label>
-			<input type="text" name="village" required="" /><br> <br>
-			<label>District</label>
-			<input type="text" name="district" required="" /><br> <br>
-			<label>State</label>
-			<input type="text" name="state" required="" /><br> <br>
-			<label>Pincode</label>
-			<input type="number" name="pincode" required="" /><br> <br>
-
-	<h3>Do you want to add temporary address ?</h3>
-	<input type="radio" name="isTemporaryAddressPresent" value="1"
-		required="" />Yes
-	<input type="radio" name="isTemporaryAddressPresent" value="0" />No
-	<br>
-	<br>
-
-	<div class="temporary_address">
+		<h3>Permanent Address Details</h3>
+		<input type="hidden" name="permanent_address_id" value="${employee.getId()}" />
 		<label>Door Number</label>
-		<input type="text" name="temporary_door_number" /><br> <br>
+		<input type="text" name="door_number" required="" value="${permanentAddress.getDoorNumber()}" /><br> <br>
 		<label>Street</label>
-		<input type="text" name="temporary_street" /><br> <br>
+		<input type="text" name="street" required="" value="${permanentAddress.getStreet()}" /><br> <br>
 		<label>Village</label>
-		<input type="text" name="temporary_village" /><br> <br>
+		<input type="text" name="village" required="" value="${permanentAddress.getVillage()}" /><br> <br>
 		<label>District</label>
-		<input type="text" name="temporary_district" /><br> <br>
+		<input type="text" name="district" required="" value="${permanentAddress.getDistrict()}" /><br> <br>
 		<label>State</label>
-		<input type="text" name="temporary_state" /><br> <br>
+		<input type="text" name="state" required="" value="${permanentAddress.getState()}" /><br> <br>
 		<label>Pincode</label>
-		<input type="number" name="temporary_pincode" /><br> <br>
-	</div>
+		<input type="number" name="pincode" required="" value="${permanentAddress.getPincode()}"/><br> <br>
 
-	<input type="submit" value="Create Employee" />
+	    <h3>Do you want to add temporary address ?</h3>
+	    <input type="radio" name="isTemporaryAddressPresent" value="1" required="" />Yes
+	    <input type="radio" name="isTemporaryAddressPresent" value="0" />No
+	    <br>
+	    <br>
+
+	    <div class="temporary_address">
+	        <input type="hidden" name="temporary_address_id" value="${temporaryAddress.getAddressId()}" />
+		    <label>Door Number</label>
+		    <input type="text" name="temporary_door_number" value="${temporaryAddress.getDoorNumber()}" /><br> <br>
+		    <label>Street</label>
+		    <input type="text" name="temporary_street" value="${temporaryAddress.getStreet()}" /><br> <br>
+		    <label>Village</label>
+		    <input type="text" name="temporary_village" value="${temporaryAddress.getVillage()}" /><br> <br>
+		    <label>District</label>
+		    <input type="text" name="temporary_district" value="${temporaryAddress.getDistrict()}" /><br> <br>
+		    <label>State</label>
+		    <input type="text" name="temporary_state" value="${temporaryAddress.getState()}" /><br> <br>
+		    <label>Pincode</label>
+		    <input type="number" name="temporary_pincode" value="${temporaryAddress.getPincode()}" /><br> <br>
+	    </div>
+
+        <c:if test="${null == employee.getId()}">
+    	    <input formaction="employee?action=create_employee" type="submit" value="Create Employee" />
+        </c:if>
+
+        <c:if test="${null != employee.getId()}">
+    	    <input formaction="employee?action=update_employee" type="submit" value="Update Employee" />
+        </c:if>
+
 	</form>
 	<br>
 

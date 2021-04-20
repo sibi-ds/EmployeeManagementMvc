@@ -101,7 +101,7 @@ public interface ProjectService {
      *
      * @return true if employee added to a project successfully else false
      */
-    public boolean assignEmployee(int projectId, int employeeId);
+//    public boolean assignEmployee(int projectId, int employeeId);
     
     /**
      * remove employee from a project
@@ -111,7 +111,7 @@ public interface ProjectService {
      *
      * @return true if employee removed from a project successfully else false
      */
-    public boolean unassignEmployee(int projectId, int employeeId);
+//    public boolean unassignEmployee(int projectId, int employeeId);
     
     /**
      * remove the details of a project
