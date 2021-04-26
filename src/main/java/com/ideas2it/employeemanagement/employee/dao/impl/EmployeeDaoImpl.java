@@ -1,37 +1,35 @@
 package com.ideas2it.employeemanagement.employee.dao.impl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 import com.ideas2it.employeemanagement.employee.dao.EmployeeDao;
-import com.ideas2it.employeemanagement.employee.model.Address;
 import com.ideas2it.employeemanagement.employee.model.Employee;
-import com.ideas2it.employeemanagement.project.model.Project;
 import com.ideas2it.employeemanagement.sessionfactory.HibernateUtility;
+import com.ideas2it.exceptions.EmployeeManagementException;
+import com.ideas2it.loggers.EmployeeManagementLogger;
 
 /**
- * this class implements dao interface class to perform operations on employee
- * details
+ * this class implements dao interface class to
+ * perform operations on employee details
  * 
  * @author sibi
  * @created 2021-03-08
  */
 public class EmployeeDaoImpl implements EmployeeDao {
     
+    private EmployeeManagementLogger logger = new EmployeeManagementLogger(EmployeeDaoImpl.class);
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean insertEmployee(Employee employee) {
-        boolean isInserted = false;
+    public void insertEmployee(Employee employee) throws EmployeeManagementException {
         Session session = null;
         
         try {
@@ -39,23 +37,19 @@ public class EmployeeDaoImpl implements EmployeeDao {
             session.beginTransaction();
             session.save(employee);
             session.getTransaction().commit();
-            isInserted = true;
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Employee Insertion Failure");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
-        
-        return isInserted;
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Employee> getEmployees() {
+    public List<Employee> getEmployees() throws EmployeeManagementException {
         List<Employee> employees = null;
         Session session = null;
         
@@ -70,11 +64,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
                 });
             });
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Employees Fetch Failure");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         return employees;
@@ -84,7 +77,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public Employee getEmployee(int employeeId) {
+    public Employee getEmployee(int employeeId) throws EmployeeManagementException {
         Employee employee = null;
         Session session = null;
         
@@ -98,11 +91,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             employee.getProjects().forEach((project) -> {
             });
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Employee Fetch Failure");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         return employee;
@@ -112,7 +104,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public Employee getEmployeeAndAddresses(int employeeId) {
+    public Employee getEmployeeAndAddresses(int employeeId) throws EmployeeManagementException {
         Employee employee = null;
         Session session = null;
         
@@ -123,11 +115,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             employee.getAddresses().forEach((address) -> {
             });
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Employee And Addresses Fetch Failure");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         return employee;
@@ -137,7 +128,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public Employee getEmployeeAndProjects(int employeeId) {
+    public Employee getEmployeeAndProjects(int employeeId) throws EmployeeManagementException {
         Employee employee = null;
         Session session = null;
         
@@ -148,11 +139,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             employee.getProjects().forEach((project) -> {
             });
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Employee And Projects Fetch Failure");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         return employee;
@@ -162,30 +152,53 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public Employee getSpecifiedEmployee(int employeeId) {
-        Employee employee = null;
+    public List<Employee> getSpecifiedEmployees(List<Integer> employeeIds) throws EmployeeManagementException {
+        List<Employee> employees = new ArrayList<Employee>();
         Session session = null;
         
         try {
             session = HibernateUtility.getSessionFactory().openSession();
-            employee = (Employee) session.get(Employee.class, employeeId);
-        } catch (HibernateException e) {
-            e.printStackTrace();
-        } finally {
-            if (null != session) {
-                session.close();
+            for (Integer employeeId : employeeIds) {
+                employees.add((Employee) session.get(Employee.class, employeeId));
             }
+        } catch (HibernateException e) {
+            logger.logError(e);
+            throw new EmployeeManagementException("Specified Employees Fetch Failure");
+        } finally {
+            HibernateUtility.closeSession(session);
         }
         
-        return employee;
+        return employees;
     }
     
     /**
      * {@inheritDoc}
      */
+//    @Override
+//    public Employee getSpecifiedEmployee(int employeeId) throws EmployeeManagementException {
+//        Employee employee = null;
+//        Session session = null;
+//        
+//        try {
+//            session = HibernateUtility.getSessionFactory().openSession();
+//            employee = (Employee) session.get(Employee.class, employeeId);
+//        } catch (HibernateException e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (null != session) {
+//                session.close();
+//            }
+//        }
+//        
+//        return employee;
+//    }
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean updateEmployee(Employee employee) {
-        boolean isUpdated = false;
+    public void updateEmployee(Employee employee) {
+        //boolean isUpdated = false;
         Session session = null;
         
         try {
@@ -193,23 +206,21 @@ public class EmployeeDaoImpl implements EmployeeDao {
             session.beginTransaction();
             session.update(employee);
             session.getTransaction().commit();
-            isUpdated = true;
+            //isUpdated = true;
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
-        return isUpdated;
+        //return isUpdated;
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Employee> getDeletedEmployees() {
+    public List<Employee> getDeletedEmployees() throws EmployeeManagementException {
         List<Employee> deletedEmployees = null;
         Session session = null;
         
@@ -219,11 +230,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             criteria.add(Restrictions.eq("isDeleted", true));
             deletedEmployees = criteria.list();
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Failed To Fetch Deleted Employees");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         return deletedEmployees;
@@ -233,7 +243,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean isEmployeePresent(int employeeId) {
+    public boolean isEmployeePresent(int employeeId) throws EmployeeManagementException {
         Employee employee = null;
         Session session = null;
         
@@ -241,11 +251,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             session = HibernateUtility.getSessionFactory().openSession();
             employee = (Employee) session.get(Employee.class, employeeId);
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Failed To Check Employee Active Status");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         if (null == employee) {
@@ -261,7 +270,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
      * {@inheritDoc}
      */
     @Override
-    public boolean isEmployeeDeleted(int employeeId) {
+    public boolean isEmployeeDeleted(int employeeId) throws EmployeeManagementException {
         Employee employee = null;
         Session session = null;
         
@@ -269,11 +278,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
             session = HibernateUtility.getSessionFactory().openSession();
             employee = (Employee) session.get(Employee.class, employeeId);
         } catch (HibernateException e) {
-            e.printStackTrace();
+            logger.logError(e);
+            throw new EmployeeManagementException("Failed To Check Employee Deleted Status");
         } finally {
-            if (null != session) {
-                session.close();
-            }
+            HibernateUtility.closeSession(session);
         }
         
         if (null == employee) {

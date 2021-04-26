@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<!--<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,30 +23,31 @@
 		<strong>${message}</strong>
 	</div>
 	<br>
-
-	<table border="1">
-		<thead>
-			<tr>
-				<th>Project ID</th>
-				<th>Title</th>
-				<th>Client Name</th>
-				<th>Manager ID</th>
-				<th>Start Date</th>
-				<th>End Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			<c:forEach items="${projects}" var="project">
+	<c:if test="${projects != null}">
+		<table border="1">
+			<thead>
 				<tr>
-					<td><c:out value="${project.getId()}"></c:out></td>
-					<td><c:out value="${project.getTitle()}"></c:out></td>
-					<td><c:out value="${project.getClientName()}"></c:out></td>
-					<td><c:out value="${project.getManagerId()}"></c:out></td>
-					<td><c:out value="${project.getStartDate()}"></c:out></td>
-					<td><c:out value="${project.getEndDate()}"></c:out></td>
-				<tr>
-			</c:forEach>
-		</tbody>
-	</table>
+					<th>Project ID</th>
+					<th>Title</th>
+					<th>Client Name</th>
+					<th>Manager ID</th>
+					<th>Start Date</th>
+					<th>End Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach items="${projects}" var="project">
+					<tr>
+						<td><c:out value="${project.getId()}"></c:out></td>
+						<td><c:out value="${project.getTitle()}"></c:out></td>
+						<td><c:out value="${project.getClientName()}"></c:out></td>
+						<td><c:out value="${project.getManagerId()}"></c:out></td>
+						<td><c:out value="${project.getStartDate()}"></c:out></td>
+						<td><c:out value="${project.getEndDate()}"></c:out></td>
+					<tr>
+				</c:forEach>
+			</tbody>
+		</table>
+	</c:if>
 </body>
 </html>

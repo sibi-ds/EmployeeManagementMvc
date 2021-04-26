@@ -16,39 +16,39 @@
 </style>
 </head>
 <body>
-	<form method="post">
-	    <input type="hidden" name="project_id" value="${project.getId()}" />
-	    <label>Title</label>
-		<input type="text" name="title" required="" value="${project.getTitle()}" /> <br> <br>
-		<label>Client Name</label>
-		<input type="text" name="client_name" required="" value="${project.getClientName()}" /> <br> <br>
-		<label>Manager ID</label>
-		<input type="number" name="manager_id" required="" value="${project.getManagerId()}" /> <br> <br>
-		<label>Start Date</label>
-		<input type="date" name="start_date" required="" value="${project.getStartDate()}" /> <br> <br>
-		<label>End Date</label>
-		<input type="date" name="end_date" required="" value="${project.getEndDate()}" /> <br> <br>
+    <form method="post">
+        <input type="hidden" name="project_id" value="${project.getId()}" />
+        <label>Title</label>
+        <input type="text" name="title" required="" value="${project.getTitle()}" /> <br> <br>
+        <label>Client Name</label>
+        <input type="text" name="client_name" required="" value="${project.getClientName()}" /> <br> <br>
+        <label>Manager ID</label>
+        <input type="number" name="manager_id" required="" value="${project.getManagerId()}" /> <br> <br>
+        <label>Start Date</label>
+        <input type="date" name="start_date" required="" value="${project.getStartDate()}" /> <br> <br>
+        <label>End Date</label>
+        <input type="date" name="end_date" required="" value="${project.getEndDate()}" /> <br> <br>
 		
-		<c:if test="${null != project.getId()}">
+        <c:if test="${null != project.getId()}">
             <input type="submit" formaction="project?action=update_project" value="Update Project" />
-		</c:if>
+        </c:if>
 		
-		<c:if test="${null == project.getId()}">
-		    <input type="submit" formaction="project?action=create_project" value="Create Project" />
-		</c:if>
-	</form>
-	<br>
+        <c:if test="${null == project.getId()}">
+            <input type="submit" formaction="project?action=create_project" value="Create Project" />
+        </c:if>
+    </form>
+    <br>
 
-	<a href="index.jsp">
-		<button>Home</button>
-	</a>
+    <a href="index.jsp">
+        <button>Home</button>
+    </a>
 
-	<a href="project.jsp">
-		<button>Back</button>
-	</a>
+    <a href="project.jsp">
+        <button>Back</button>
+    </a>
 
-	<div>
-		<strong>${message}</strong>
-	</div>
+    <div>
+        <strong>${message}</strong>
+    </div>
 </body>
 </html>
