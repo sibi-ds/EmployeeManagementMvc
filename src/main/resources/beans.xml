@@ -1,0 +1,23 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+    	http://www.springframework.org/schema/beans/spring-beans.xsd
+    	http://www.springframework.org/schema/context
+    	http://www.springframework.org/schema/context/spring-context.xsd
+    	http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<bean id="employeeService" class="com.ideas2it.employeemanagement.employee.service.impl.EmployeeServiceImpl">
+	    <constructor-arg ref="employeeDao"></constructor-arg>
+	    <constructor-arg ref="projectService"></constructor-arg>
+	</bean>
+	
+	<bean id="employeeDao" class="com.ideas2it.employeemanagement.employee.dao.impl.EmployeeDaoImpl"></bean>
+	
+	<bean id="projectService" class="com.ideas2it.employeemanagement.project.service.impl.ProjectServiceImpl"></bean>
+	
+	<bean id="employeeManagementLogger" class="com.ideas2it.loggers.EmployeeManagementLogger"></bean>
+</beans>
